@@ -1,16 +1,28 @@
-import numpy as np
 import matplotlib.pyplot as plt; plt.close('all')
 import networkx as nx
 from matplotlib.animation import FuncAnimation
 import random as rd
-import matplotlib.cm as cm
-import matplotlib.colors as mcolors
-from util_new import animate_nodes, update_super, pull_ball, init_urns, generate_graph
+import numpy as np
 
-'''
-# Added
 def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **kwargs):
+    """
+    Function to animate node colours changing.
 
+    Args:
+        G: Networkx graph structure.
+        node_colors: 2D Numpy array of urn health over time. Time in dim 0. Urns in dim 1. TODO: Check dims
+        scalarmappaple: matplotlib color code TODO: Rewrite this with more accurate info
+        colormap: TODO: What is this?
+        pos: Default is None TODO: What is this?
+
+        TODO: Finish writing this
+
+    Returns:
+        Animation object from matplotlib.animation.
+
+    Raises:
+        None.
+    """
     # define graph layout if None given
     if pos is None:
         pos = nx.spring_layout(G)
@@ -44,8 +56,19 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
     animation = FuncAnimation(fig, update, interval=50, frames=len(node_colors[:,0]), blit=True)
     return animation
 
-# Added
 def update_super(graph):
+    """
+    Function to update super urns after pulling balls.
+
+    Args:
+        graph: Networkx graph structure.
+
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
     num_nodes = graph.number_of_nodes()
     for node in range(num_nodes):
         graph.nodes[node]['super_red'] = graph.nodes[node]['red']
@@ -58,8 +81,21 @@ def update_super(graph):
             graph.nodes[node]['super_blue'] += blue
             graph.nodes[node]['super_total'] += red + blue
 
-# Added
-def pull_ball(graph):
+def pull_ball(graph, delta_red, delta_blue):
+    """
+    Function to simulate pulling of a ball from all urns. Updates only local urns.
+
+    Args:
+        graph: Networkx graph structure.
+        delta_red: Number of red balls to be added on red pull.
+        delta_blue: Number of blue balls to be added on blue pull.
+
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
     num_nodes = graph.number_of_nodes()
     for node in range(num_nodes):
         random_pull = rd.uniform(0,1)
@@ -73,58 +109,46 @@ def pull_ball(graph):
         graph.nodes[node]['health'].append((graph.nodes[node]['red']/graph.nodes[node]['total'])) # Update the health of each node
         #graph.nodes[node]['health'].append(int((graph.nodes[node]['red']/graph.nodes[node]['total'])*100)) # Update the health of each node
 
-# Added
-def init_urns(graph):
+def init_urns(graph, init_red, init_blue):
+    """
+    Function to initialize red and blue balls in urns and super urns.
+
+    Args:
+        graph: Networkx graph object to be initialized.
+        init_red: Initial number of red balls.
+        init_blue: Initial number of blue balls.
+
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
     num_nodes = graph.number_of_nodes()
     for node in range(num_nodes):
         # i, red=2, blue=2, total=4, super_red=2, super_blue=2, super_total=4, health=[1], pos=(i,1)
-        graph.nodes[node]['red'] = 2
-        graph.nodes[node]['blue'] = 2
-        graph.nodes[node]['total'] = 4
-        graph.nodes[node]['super_red'] = 2
-        graph.nodes[node]['super_blue'] = 2
-        graph.nodes[node]['super_total'] = 2
-        graph.nodes[node]['health'] = [0.5]
-'''
+        graph.nodes[node]['red'] = init_red
+        graph.nodes[node]['blue'] = init_blue
+        graph.nodes[node]['total'] = init_red + init_blue
+        graph.nodes[node]['super_red'] = init_red
+        graph.nodes[node]['super_blue'] = init_blue
+        graph.nodes[node]['super_total'] = init_red + init_blue
+        graph.nodes[node]['health'] = [init_red/(init_blue+init_red)]
 
-#graph = nx.complete_graph(total_nodes)
-graph = generate_graph("./src/graph_data/Fig5_1_c_Adjacency_Matrix.txt")
-time_steps = 10
-delta_red = 1
-delta_blue = 1
-init_red=2
-init_blue=2
-num_nodes = graph.number_of_nodes()
+def generate_graph(adj_matrix_path, skiprows=0):
+    """
+    Function to generate networkx graph object from adjacency matrix.
 
-init_urns(graph, init_red, init_blue)
+    Args:
+        adj_matrix_path: Path to adjacency matrix file.
+        skiprows: Number of rows to skip in adj matrix file - default it 0.
 
-for i in range(time_steps):
-    update_super(graph)
-    pull_ball(graph, delta_red, delta_blue)
+    Returns:
+        Returns networkx graph object.
 
-health = np.empty((num_nodes, time_steps+1))
-for node in range(num_nodes):
-    health[node] = graph.nodes[node]['health']
-
-health = np.array(health)
-
-node_colors_r = health[:,:-1].T
-node_colors_r_1 = health[:,:-1]
-node_colors_template = np.random.randint(0, 100, size=(time_steps, num_nodes))
-
-
-node_colors_test = np.ones((time_steps, num_nodes))
-
-#normalize = mcolors.Normalize(vmin=health.min(), vmax=health.max())
-normalize = mcolors.Normalize(vmin=0, vmax=1)
-#colormap = cm.jet
-colormap = mcolors.LinearSegmentedColormap.from_list("MyCmapName",["b","r"])
-colormap = cm.get_cmap('seismic')
-
-scalarmappaple = cm.ScalarMappable(norm=normalize, cmap=colormap)
-scalarmappaple.set_array(health[0,:])
-
-
-
-animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('test.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+    Raises:
+        None.
+    """
+    np_array = np.loadtxt(open(adj_matrix_path, "rb"), delimiter=",", skiprows=skiprows)
+    graph = nx.from_numpy_array(np_array)
+    return graph
