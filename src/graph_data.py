@@ -12,7 +12,7 @@ def read_features(filename, graph):
     with open(filename, 'r') as f:
         for line in f:
             parts = line.strip().split()
-            node_id = int(parts[0])  # Assuming the first part of the line is the node ID
+            node_id = int(parts[0])  
             features = map(int, parts[1:])  # Rest are the features
             if node_id not in graph:
                 graph.add_node(node_id)

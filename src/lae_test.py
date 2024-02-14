@@ -9,11 +9,11 @@ from util import generate_graph
 
 from graph_data import load_graph
 
-# Define paths to your files
-edge_path = '348 files/348.edges'
-feature_path = '348 files/348.feat'
-egofeat_path = '348 files/348.egofeat'
-ego_node = 1912  # or whatever the ID of your ego node is
+# file paths
+edge_path = '414 files/414.edges'
+feature_path = '414 files/414.feat'
+egofeat_path = '414 files/414.egofeat'
+ego_node = 414  # EGO NODE NUMBER
 
 graph = load_graph(edge_path, feature_path, egofeat_path, ego_node)
 
@@ -75,9 +75,9 @@ def update_super(graph):
 
     for node in graph.nodes():
         if 'red' not in graph.nodes[node]:
-            graph.nodes[node]['red'] = 2  # Default value, adjust as needed
+            graph.nodes[node]['red'] = 2  # ???
         if 'blue' not in graph.nodes[node]:
-            graph.nodes[node]['blue'] = 2  # Default value, adjust as needed
+            graph.nodes[node]['blue'] = 2  # ???
 
         graph.nodes[node]['super_red'] = graph.nodes[node]['red']
         graph.nodes[node]['super_blue'] = graph.nodes[node]['blue']
@@ -87,7 +87,7 @@ def update_super(graph):
         for neighbor in graph.neighbors(node):
 
             if 'red' not in graph.nodes[neighbor]:
-                graph.nodes[neighbor]['red'] = 2  # Again, initialize as appropriate
+                graph.nodes[neighbor]['red'] = 2  
             if 'blue' not in graph.nodes[neighbor]:
                 graph.nodes[neighbor]['blue'] = 2
 
@@ -156,7 +156,7 @@ for i in range(time_steps):
 # node_colors_r = health[:,:-1].T
 # node_colors_r_1 = health[:,:-1]
 
-# Initialize a mapping from node IDs to indices
+# node IDs to indices 
 node_to_index = {node: i for i, node in enumerate(graph.nodes())}
 
 # Initialize the health array based on the number of nodes
@@ -195,4 +195,4 @@ scalarmappaple.set_array(health[0,:])
 
 
 animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('test348.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+animation.save('test414.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
