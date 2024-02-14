@@ -6,6 +6,7 @@ import random as rd
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 from util import generate_graph
+#anatest
 
 # Added
 def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **kwargs):
