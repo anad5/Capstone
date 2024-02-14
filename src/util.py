@@ -127,6 +127,7 @@ def generate_figure(edge_trace, node_trace, health, graph, iterations):
 def generate_graph(adj_matrix_path, skiprows=0):
     np_array = np.loadtxt(open(adj_matrix_path, "rb"), delimiter=",", skiprows=skiprows)
     graph = nx.from_numpy_array(np_array)
+    
     return graph
 
 
