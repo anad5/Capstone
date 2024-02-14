@@ -3,6 +3,7 @@ import networkx as nx
 from matplotlib.animation import FuncAnimation
 import random as rd
 import numpy as np
+from collections import deque
 
 def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **kwargs):
     """
@@ -71,9 +72,11 @@ def update_super(graph):
     """
     num_nodes = graph.number_of_nodes()
     for node in range(num_nodes):
+        # Add contents of local urn to super urn
         graph.nodes[node]['super_red'] = graph.nodes[node]['red']
         graph.nodes[node]['super_blue'] = graph.nodes[node]['blue']
         graph.nodes[node]['super_total'] = graph.nodes[node]['red'] + graph.nodes[node]['blue']
+        # Add contents of neighbours local urns to super urn
         for neighbor in graph.neighbors(node):
             red = graph.nodes[neighbor]['red']
             blue = graph.nodes[neighbor]['blue']
@@ -98,14 +101,23 @@ def pull_ball(graph, delta_red, delta_blue):
     """
     num_nodes = graph.number_of_nodes()
     for node in range(num_nodes):
+        # Remove balls that have expired
+        if len(graph.nodes[node]['history']) == graph.nodes[node]['memory']:
+            disapearing = graph.nodes[node]['history'].popleft()
+            if disapearing == 1:
+                graph.nodes[node]['red'] -= 1
+            else:
+                graph.nodes[node]['blue'] -= 1
         random_pull = rd.uniform(0,1)
         threshold = graph.nodes[node]['super_red']/graph.nodes[node]['super_total']
         if random_pull < threshold: # Pulled a red ball
             graph.nodes[node]['red'] += delta_red
             graph.nodes[node]['total'] += delta_red
+            graph.nodes[node]['history'].append(1) # Add red ball indicator to history
         else:
             graph.nodes[node]['blue'] += delta_blue
             graph.nodes[node]['total'] += delta_blue
+            graph.nodes[node]['history'].append(0) # Add blue ball indicator to history
         graph.nodes[node]['health'].append((graph.nodes[node]['red']/graph.nodes[node]['total'])) # Update the health of each node
         #graph.nodes[node]['health'].append(int((graph.nodes[node]['red']/graph.nodes[node]['total'])*100)) # Update the health of each node
 
@@ -125,6 +137,7 @@ def init_urns(graph, init_red, init_blue):
         None.
     """
     num_nodes = graph.number_of_nodes()
+    memory = 5 #TODO: Add in method to generate memories for urns.
     for node in range(num_nodes):
         # i, red=2, blue=2, total=4, super_red=2, super_blue=2, super_total=4, health=[1], pos=(i,1)
         graph.nodes[node]['red'] = init_red
@@ -134,6 +147,8 @@ def init_urns(graph, init_red, init_blue):
         graph.nodes[node]['super_blue'] = init_blue
         graph.nodes[node]['super_total'] = init_red + init_blue
         graph.nodes[node]['health'] = [init_red/(init_blue+init_red)]
+        graph.nodes[node]['memory'] = memory
+        graph.nodes[node]['history'] = deque(maxlen=memory) # Deque to store information on which balls to be removed at what times
 
 def generate_graph(adj_matrix_path, skiprows=0):
     """
