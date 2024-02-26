@@ -5,7 +5,7 @@ from matplotlib.animation import FuncAnimation
 import random as rd
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
-from util import animate_nodes, update_super, pull_ball, init_urns, generate_graph, pyvis_animation
+from util import animate_nodes, update_super, pull_ball, init_urns, generate_graph, pyvis_animation, get_degrees
 
 #graph = nx.complete_graph(total_nodes)
 graph = generate_graph("./src/graph_data/Fig5_1_c_Adjacency_Matrix.txt")

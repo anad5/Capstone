@@ -178,6 +178,25 @@ def generate_graph(adj_matrix_path, memory_flag=True, skiprows=0):
     G.graph['memory_flag'] = memory_flag
     return G
 
+def heuristic(degree, centrality, susceptibility):
+    alpha = 1
+    beta = 1
+    gamma = 1
+    return beta*degree+gamma*centrality-alpha*susceptibility
+
+def get_scores(G):
+    num_nodes = G.number_of_nodes()
+    scores = np.empty((4, num_nodes))
+    for node in range(num_nodes):
+        degree = G.degree[node]
+        centrality = 1 # TODO: Choose centrality metric and calculate
+        susceptibility = G.nodes[node]['health']
+        scores[1,node] = degree
+        scores[2,node] = centrality
+        scores[3,node] = susceptibility
+        scores[4,node] = heuristic(degree, centrality, susceptibility)
+    return scores
+
 def pyvis_animation(G, width='500px', height='500px'):
     """
     Function to animate node colours changing using pyvis.
