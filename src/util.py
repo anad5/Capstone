@@ -185,11 +185,17 @@ def heuristic(degree, centrality, susceptibility):
     return beta*degree+gamma*centrality-alpha*susceptibility
 
 def get_scores(G):
+    # Can return these as dictionaries or as numpy arrays
+    # Reference these metrics for choice of centrality https://networkx.org/documentation/stable/reference/algorithms/centrality.html
+    closeness = nx.closeness_centrality(G) # Dictionary with closeness values, index by node number
+    katz = nx.katz_centrality_numpy(G, alpha=0.1) # Numpy array with katz centrality values
+    eigen_centrality = nx.eigenvector_centrality(G) # Dictionary with closeness values, index by node number
+
     num_nodes = G.number_of_nodes()
     scores = np.empty((4, num_nodes))
     for node in range(num_nodes):
         degree = G.degree[node]
-        centrality = 1 # TODO: Choose centrality metric and calculate
+        centrality = 1 # TODO: Choose centrality metric
         susceptibility = G.nodes[node]['health'] # TODO: Health is currently a list not an int, choose most recent or add new attribute of only most recent
         scores[1,node] = degree
         scores[2,node] = centrality
