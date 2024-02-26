@@ -190,7 +190,7 @@ def get_scores(G):
     for node in range(num_nodes):
         degree = G.degree[node]
         centrality = 1 # TODO: Choose centrality metric and calculate
-        susceptibility = G.nodes[node]['health']
+        susceptibility = G.nodes[node]['health'] # TODO: Health is currently a list not an int, choose most recent or add new attribute of only most recent
         scores[1,node] = degree
         scores[2,node] = centrality
         scores[3,node] = susceptibility
