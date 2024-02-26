@@ -1,138 +1,30 @@
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt; plt.close('all')
 import networkx as nx
-import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import random as rd
+import numpy as np
+from collections import deque
+from pyvis.network import Network
 
-def generate_edge_trace(graph):
-    edge_x = []
-    edge_y = []
-
-    for edge in graph.edges():
-        test = graph.nodes[edge[0]]
-        x0, y0 = graph.nodes[edge[0]]['pos']
-        x1, y1 = graph.nodes[edge[1]]['pos']
-        edge_x.append(x0)
-        edge_x.append(x1)
-        edge_x.append(None)
-        edge_y.append(y0)
-        edge_y.append(y1)
-        edge_y.append(None)
-
-    edge_trace = go.Scatter(
-        x=edge_x, y=edge_y,
-        line=dict(width=0.5, color='#888'),
-        hoverinfo='none',
-        mode='lines')
-    return edge_trace
-
-
-def generate_node_trace(graph):
-    node_x = []
-    node_y = []
-    for node in graph.nodes():
-        x, y = graph.nodes[node]['pos']
-        node_x.append(x)
-        node_y.append(y)
-
-    node_trace = go.Scatter(
-        x=node_x, y=node_y,
-        mode='markers',
-        hoverinfo='text',
-        marker=dict(
-            showscale=True,
-            # colorscale options
-            #'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
-            #'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
-            #'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
-            colorscale='YlGnBu',
-            reversescale=True,
-            color=[],
-            size=10,
-            colorbar=dict(
-                thickness=15,
-                title='Node Connections',
-                xanchor='left',
-                titleside='right'
-            ),
-            line_width=2))
-    return node_trace
-
-def generate_figure(edge_trace, node_trace, health, graph, iterations):
-    fig = go.Figure(data=[edge_trace, node_trace],
-             layout=go.Layout(
-                frames=go.Frame(data=node_trace),
-                title='<br>Network graph made with Python',
-                titlefont_size=16,
-                showlegend=False,
-                hovermode='closest',
-                margin=dict(b=20,l=5,r=5,t=40),
-                annotations=[ dict(
-                    text="Python code: <a href='https://plotly.com/ipython-notebooks/network-graphs/'> https://plotly.com/ipython-notebooks/network-graphs/</a>",
-                    showarrow=False,
-                    xref="paper", yref="paper",
-                    x=0.005, y=-0.002 ) ],
-                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)),
-                )
-    fig['layout']['sliders']={
-        'active': 0,
-        'yanchor': 'top',
-        'xanchor': 'left',
-        'currentvalue': {
-            'font': {'size': 20},
-            'prefix': 'Iterations',
-            'visible': True,
-            'xanchor': 'right'
-        },
-        'transition': {'duration': 300, 'easing': 'cubic-in-out'},
-        'pad': {'b': 10, 't': 50},
-        'len': 0.9,
-        'x': 0.1,
-        'y': 0,
-        'steps': [...]
-    }
-    fig['layout']['updatemenus'] = [
-    {
-        'buttons': [
-            {
-                'args': [None, {'frame': {'duration': 500, 'redraw': False},
-                         'fromcurrent': True, 'transition': {'duration': 300, 'easing': 'quadratic-in-out'}}],
-                'label': 'Play',
-                'method': 'animate'
-            },
-            {
-                'args': [[None], {'frame': {'duration': 0, 'redraw': False}, 'mode': 'immediate',
-                'transition': {'duration': 0}}],
-                'label': 'Pause',
-                'method': 'animate'
-            }
-        ],
-        'direction': 'left',
-        'pad': {'r': 10, 't': 87},
-        'showactive': False,
-        'type': 'buttons',
-        'x': 0.1,
-        'xanchor': 'right',
-        'y': 0,
-        'yanchor': 'top'
-    }
-    ]
-    for iteration in iterations:
-        data_dict = {}
-
-    fig.show()
-
-def generate_graph(adj_matrix_path, skiprows=0):
-    np_array = np.loadtxt(open(adj_matrix_path, "rb"), delimiter=",", skiprows=skiprows)
-    graph = nx.from_numpy_array(np_array)
-    return graph
-
-
-#New
 def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **kwargs):
+    """
+    Function to animate node colours changing.
 
+    Args:
+        G: Networkx graph structure.
+        node_colors: 2D Numpy array of urn health over time. Time in dim 0. Urns in dim 1. TODO: Check dims
+        scalarmappaple: matplotlib color code TODO: Rewrite this with more accurate info
+        colormap: TODO: What is this?
+        pos: Default is None TODO: What is this?
+
+        TODO: Finish writing this
+
+    Returns:
+        Animation object from matplotlib.animation.
+
+    Raises:
+        None.
+    """
     # define graph layout if None given
     if pos is None:
         pos = nx.spring_layout(G)
@@ -166,11 +58,26 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
     animation = FuncAnimation(fig, update, interval=50, frames=len(node_colors[:,0]), blit=True)
     return animation
 
-def update_super(graph, num_nodes):
+def update_super(graph):
+    """
+    Function to update super urns after pulling balls.
+
+    Args:
+        graph: Networkx graph structure.
+
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
+    num_nodes = graph.number_of_nodes()
     for node in range(num_nodes):
+        # Add contents of local urn to super urn
         graph.nodes[node]['super_red'] = graph.nodes[node]['red']
         graph.nodes[node]['super_blue'] = graph.nodes[node]['blue']
         graph.nodes[node]['super_total'] = graph.nodes[node]['red'] + graph.nodes[node]['blue']
+        # Add contents of neighbours local urns to super urn
         for neighbor in graph.neighbors(node):
             red = graph.nodes[neighbor]['red']
             blue = graph.nodes[neighbor]['blue']
@@ -178,27 +85,117 @@ def update_super(graph, num_nodes):
             graph.nodes[node]['super_blue'] += blue
             graph.nodes[node]['super_total'] += red + blue
 
-def pull_ball(graph, delta_blue, delta_red, num_nodes):
+def pull_ball(graph, delta_red, delta_blue):
+    """
+    Function to simulate pulling of a ball from all urns. Updates only local urns.
+
+    Args:
+        graph: Networkx graph structure.
+        delta_red: Number of red balls to be added on red pull.
+        delta_blue: Number of blue balls to be added on blue pull.
+
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
+    num_nodes = graph.number_of_nodes()
     for node in range(num_nodes):
+        # Remove balls that have expired
+        if graph.graph['memory_flag'] == True:
+            if len(graph.nodes[node]['history']) == graph.nodes[node]['memory']:
+                disapearing = graph.nodes[node]['history'].popleft()
+                if disapearing == 1:
+                    graph.nodes[node]['red'] -= 1
+                else:
+                    graph.nodes[node]['blue'] -= 1
         random_pull = rd.uniform(0,1)
         threshold = graph.nodes[node]['super_red']/graph.nodes[node]['super_total']
         if random_pull < threshold: # Pulled a red ball
             graph.nodes[node]['red'] += delta_red
             graph.nodes[node]['total'] += delta_red
+            if graph.graph['memory_flag'] == True:
+                graph.nodes[node]['history'].append(1) # Add red ball indicator to history
         else:
             graph.nodes[node]['blue'] += delta_blue
             graph.nodes[node]['total'] += delta_blue
+            if graph.graph['memory_flag'] == True:
+                graph.nodes[node]['history'].append(0) # Add blue ball indicator to history
         graph.nodes[node]['health'].append((graph.nodes[node]['red']/graph.nodes[node]['total'])) # Update the health of each node
         #graph.nodes[node]['health'].append(int((graph.nodes[node]['red']/graph.nodes[node]['total'])*100)) # Update the health of each node
 
-def init_urns(graph, num_nodes):
+def init_urns(graph, init_red, init_blue, memory=5, memory_list=None):
+    """
+    Function to initialize red and blue balls in urns and super urns.
+
+    Args:
+        graph: Networkx graph object to be initialized.
+        init_red: Initial number of red balls.
+        init_blue: Initial number of blue balls.
+        memory: Value for uniform memory length. Default is 5. 
+        memory_list: Optional list for memories of urns - in oder of nodes in graph. If no list passed then memories are defaulted to memory value.
+
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
+    num_nodes = graph.number_of_nodes()
     for node in range(num_nodes):
         # i, red=2, blue=2, total=4, super_red=2, super_blue=2, super_total=4, health=[1], pos=(i,1)
-        graph.nodes[node]['red'] = 2
-        graph.nodes[node]['blue'] = 2
-        graph.nodes[node]['total'] = 4
-        graph.nodes[node]['super_red'] = 2
-        graph.nodes[node]['super_blue'] = 2
-        graph.nodes[node]['super_total'] = 2
-        graph.nodes[node]['health'] = [0.5]
+        graph.nodes[node]['red'] = init_red
+        graph.nodes[node]['blue'] = init_blue
+        graph.nodes[node]['total'] = init_red + init_blue
+        graph.nodes[node]['super_red'] = init_red
+        graph.nodes[node]['super_blue'] = init_blue
+        graph.nodes[node]['super_total'] = init_red + init_blue
+        graph.nodes[node]['health'] = [init_red/(init_blue+init_red)]
+        if graph.graph['memory_flag'] == True:
+            if memory_list != None: # Distinct memory values for urns
+                graph.nodes[node]['memory'] = memory_list[node]
+            else: # Uniform memory distribution
+                graph.nodes[node]['memory'] = memory
+            graph.nodes[node]['history'] = deque(maxlen=graph.nodes[node]['memory']) # Deque to store information on which balls to be removed at what times
+            
+def generate_graph(adj_matrix_path, memory_flag=True, skiprows=0):
+    """
+    Function to generate networkx graph object from adjacency matrix.
 
+    Args:
+        adj_matrix_path: Path to adjacency matrix file.
+        skiprows: Number of rows to skip in adj matrix file - default it 0.
+
+    Returns:
+        Returns networkx graph object.
+
+    Raises:
+        None.
+    """
+    np_array = np.loadtxt(open(adj_matrix_path, "rb"), delimiter=",", skiprows=skiprows)
+    G = nx.from_numpy_array(np_array)
+    G.graph['memory_flag'] = memory_flag
+    return G
+
+def pyvis_animation(G, width='500px', height='500px'):
+    """
+    Function to animate node colours changing using pyvis.
+
+    Args:
+        G: Networkx graph structure.
+        width: Width of animation box in pixels e.g. '500px'
+        width: Height of animation box in pixels e.g. '500px'
+
+
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
+    for node in range(G.number_of_nodes()):
+        G.nodes[node].pop('history',None)
+    nt = Network(width, height)
+    nt.from_nx(G)
+    nt.show('nx.html', notebook=False)
