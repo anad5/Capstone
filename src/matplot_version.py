@@ -108,6 +108,15 @@ for node in range(num_nodes):
 
 health = np.array(health)
 
+avg_health = np.sum(health[:,:-1], axis=0)/num_nodes
+plt.plot(avg_health)
+plt.xlabel('Timestep')
+plt.ylabel('Average Network Exposure')
+
+plt.show()
+#print(avg_health[1:4])
+
+
 node_colors_r = health[:,:-1].T
 node_colors_r_1 = health[:,:-1]
 node_colors_template = np.random.randint(0, 100, size=(time_steps, num_nodes))

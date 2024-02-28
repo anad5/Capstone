@@ -121,6 +121,19 @@ def pull_ball(graph, delta_red, delta_blue):
         graph.nodes[node]['health'].append((graph.nodes[node]['red']/graph.nodes[node]['total'])) # Update the health of each node
         #graph.nodes[node]['health'].append(int((graph.nodes[node]['red']/graph.nodes[node]['total'])*100)) # Update the health of each node
 
+def calc_health(graph):
+    """
+    Function to plot the overall "health" of the network over all timesteps
+    """
+    num_nodes = graph.number_of_nodes()
+    total_health = 0
+    for node in range(num_nodes):
+        total_health += graph.nodes[node]['health'] 
+        
+        
+
+
+
 def init_urns(graph, init_red, init_blue):
     """
     Function to initialize red and blue balls in urns and super urns.
