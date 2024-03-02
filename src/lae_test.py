@@ -10,10 +10,10 @@ from util import generate_graph
 from graph_data import load_graph
 
 # file paths
-edge_path = '414 files/414.edges'
-feature_path = '414 files/414.feat'
-egofeat_path = '414 files/414.egofeat'
-ego_node = 414  # EGO NODE NUMBER
+edge_path = '1912 files/1912.edges'
+feature_path = '1912 files/1912.feat'
+egofeat_path = '1912 files/1912.egofeat'
+ego_node = 1912 # EGO NODE NUMBER
 
 graph = load_graph(edge_path, feature_path, egofeat_path, ego_node)
 
@@ -25,7 +25,7 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
 
     # define graph layout if None given
     if pos is None:
-        pos = nx.spring_layout(G)
+        pos = nx.spring_layout(G, k = 0.5)
 
     # draw graph
     #plt.title('Polya Urn Network')
@@ -33,8 +33,8 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
     #cbar.set_label('Brand awareness')
         
     #initial
-    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 75, cmap=colormap, ax=ax, *args, **kwargs)
-    edges = nx.draw_networkx_edges(G, pos, ax=ax, *args, **kwargs)
+    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 15, cmap=colormap, ax=ax, *args, **kwargs)
+    edges = nx.draw_networkx_edges(G, pos, width = 0.25, ax=ax, *args, **kwargs)
 
     scalarmappaple.set_array(node_colors[0, :])
 
@@ -78,6 +78,8 @@ def update_super(graph):
             graph.nodes[node]['red'] = 2  # ???
         if 'blue' not in graph.nodes[node]:
             graph.nodes[node]['blue'] = 2  # ???
+        if not list(graph.neighbors(node)):
+            continue
 
         graph.nodes[node]['super_red'] = graph.nodes[node]['red']
         graph.nodes[node]['super_blue'] = graph.nodes[node]['blue']
@@ -119,6 +121,9 @@ def pull_ball(graph):
     #num_nodes = max(max(graph.nodes()), 1500) 
     #for node in range(num_nodes):
     for node in graph.nodes():
+        if len(list(graph.neighbors(node))) == 0:
+            continue
+
         random_pull = rd.uniform(0,1)
         threshold = graph.nodes[node]['super_red']/graph.nodes[node]['super_total']
 
@@ -195,4 +200,4 @@ scalarmappaple.set_array(health[0,:])
 
 
 animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('test414.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+animation.save('test1912.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)

@@ -15,7 +15,7 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
 
     # define graph layout if None given
     if pos is None:
-        pos = nx.spring_layout(G)
+        pos = nx.spring_layout(G, k = 0.75)
 
     # draw graph
     #plt.title('Polya Urn Network')
@@ -23,8 +23,8 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
     #cbar.set_label('Brand awareness')
         
     #initial
-    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 100, cmap=colormap, ax=ax, *args, **kwargs)
-    edges = nx.draw_networkx_edges(G, pos, ax=ax, *args, **kwargs)
+    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 0.5, cmap=colormap, ax=ax, *args, **kwargs)
+    edges = nx.draw_networkx_edges(G, pos, width = 0.5, ax=ax, *args, **kwargs)
 
     scalarmappaple.set_array(node_colors[0, :])
 
