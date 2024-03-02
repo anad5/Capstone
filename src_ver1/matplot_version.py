@@ -102,7 +102,7 @@ def init_urns(graph):
         graph.nodes[node]['health'] = [0.5]
 
 #graph = nx.complete_graph(total_nodes)
-graph = generate_graph("./src/graph_data/Fig5_1_c_Adjacency_Matrix.txt")
+graph = generate_graph("./src_ver1/graph_data/Fig5_1_c_Adjacency_Matrix.txt")
 time_steps = 40
 delta_red = 1
 delta_blue = 1
@@ -139,4 +139,4 @@ scalarmappaple.set_array(health[0,:])
 
 
 animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('Test_2.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+animation.save('Test_1.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)

@@ -95,7 +95,7 @@ def init_urns(graph, influencer_node):
         graph.add_edge(influencer_node, node)
 
 # Example Usage
-graph = generate_graph("./src/graph_data/Fig5_1_c_Adjacency_Matrix.txt")
+graph = generate_graph("./src_ver1/graph_data/Fig5_1_c_Adjacency_Matrix.txt")
 time_steps = 40
 delta_red = 1
 delta_blue = 1
@@ -123,6 +123,6 @@ scalarmappaple = cm.ScalarMappable(norm=normalize, cmap=colormap)
 scalarmappaple.set_array(health[0, :])
 
 animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('Test_Influencer_Start_1.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+animation.save('Test_Influencer_Middle_1.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
 
 plt.show()  # To display the final plot
