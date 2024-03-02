@@ -65,6 +65,8 @@ def generate_figure(edge_trace, node_trace, health, graph, iterations):
                 frames=go.Frame(data=node_trace),
                 title='<br>Network graph made with Python',
                 titlefont_size=16,
+                #width=800,
+                #height=800, 
                 showlegend=False,
                 hovermode='closest',
                 margin=dict(b=20,l=5,r=5,t=40),

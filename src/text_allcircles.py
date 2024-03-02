@@ -9,25 +9,31 @@ from util import generate_graph
 
 from graph_data1 import combine_graphs
 
-# Define the path where all circle files are stored
+# folder with all edge files 
 circle_files_path = 'circles'
 
-# Define the path to the combined graph file
+# combined graph file with edges
 combined_file_path = 'circles/facebook_combined.txt'
 
-# Combine all graphs into one
+# combine all graphs into one
 graph = combine_graphs(circle_files_path, combined_file_path)
+
+# count the number of nodes in the graph to double check all circles are being brought in 
+number_of_nodes = graph.number_of_nodes()
+print("Number of nodes in the combined graph:", number_of_nodes)
 
 
 # Added
 def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **kwargs):
+
+    plt.figure(figsize=(20, 15))
 
     fig, ax = plt.subplots() 
     plt.title('Polya Urn Network')
 
     # define graph layout if None given
     if pos is None:
-        pos = nx.spring_layout(G, k = 0.1)
+        pos = nx.spring_layout(G, k = 0.08)
 
     # draw graph
     #plt.title('Polya Urn Network')
@@ -202,4 +208,4 @@ scalarmappaple.set_array(health[0,:])
 
 
 animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('testall_2.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+animation.save('gifs/testall_2.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
