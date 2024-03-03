@@ -10,6 +10,7 @@ import matplotlib.colors as mcolors
 from util import generate_graph
 
 from graph_data1 import combine_graphs
+from heuristic import calc_centrality, calc_degree, calc_susceptibility
 
 # folder with all edge files 
 circle_files_path = 'circles'
@@ -157,11 +158,33 @@ num_nodes = graph.number_of_nodes()
 
 init_urns(graph)
 
+#susceptibility_values = np.zeros((num_nodes, time_steps))
+#degree_values = np.zeros((num_nodes, time_steps))
+#centrality_values = np.zeros((num_nodes, time_steps))
+
+# node IDs to indices 
+node_to_index = {node: i for i, node in enumerate(graph.nodes())}
 
 for i in range(time_steps):
     update_super(graph)
     pull_ball(graph)
 
+
+#test_array = np.empty((3, num_nodes))
+
+#for node in graph.nodes():
+  #  node_idx = node_to_index[node]
+    # Assuming node IDs are integers and directly correspond to array indices
+  #  sus = calc_susceptibility(graph, node, 'red', 'total')
+ #  deg = calc_degree(graph, node)
+  #  cen = calc_centrality(graph, node)
+# test_array[0, node_idx] = sus
+   # test_array[1, node_idx] = deg
+   # test_array[2, node_idx] = cen
+
+    #susceptibility_values[node_idx] = calc_susceptibility(graph, node, 'red', 'total')
+    #degree_values[node_idx] = calc_degree(graph, node)
+    #centrality_values[node_idx] = calc_centrality(graph, node)
 
 # health = np.empty((num_nodes, time_steps+1))
 # #for node in range(num_nodes):

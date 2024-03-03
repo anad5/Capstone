@@ -205,3 +205,4 @@ def init_urns(graph, num_nodes):
         graph.nodes[node]['super_total'] = 2
         graph.nodes[node]['health'] = [0.5]
 
+

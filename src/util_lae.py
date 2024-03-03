@@ -1,41 +1,146 @@
-# FOR THE COMBINED EDGES FILES AND IMPORTS ALL CIRCLE FILES 
-
-import numpy as np
-import matplotlib.pyplot as plt; plt.close('all')
+import plotly.graph_objects as go
 import networkx as nx
+import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import random as rd
-import matplotlib.cm as cm
-import matplotlib.colors as mcolors
-from util import generate_graph
 
-from graph_data1 import combine_graphs
+def generate_edge_trace(graph):
+    edge_x = []
+    edge_y = []
 
-# folder with all edge files 
-circle_files_path = 'circles'
+    for edge in graph.edges():
+        test = graph.nodes[edge[0]]
+        x0, y0 = graph.nodes[edge[0]]['pos']
+        x1, y1 = graph.nodes[edge[1]]['pos']
+        edge_x.append(x0)
+        edge_x.append(x1)
+        edge_x.append(None)
+        edge_y.append(y0)
+        edge_y.append(y1)
+        edge_y.append(None)
 
-# combined graph file with edges
-combined_file_path = 'circles/facebook_combined.txt'
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=0.5, color='#888'),
+        hoverinfo='none',
+        mode='lines')
+    return edge_trace
 
-# combine all graphs into one
-graph = combine_graphs(circle_files_path, combined_file_path)
 
-# count the number of nodes in the graph to double check all circles are being brought in 
-number_of_nodes = graph.number_of_nodes()
-print("Number of nodes in the combined graph:", number_of_nodes)
+def generate_node_trace(graph):
+    node_x = []
+    node_y = []
+    for node in graph.nodes():
+        x, y = graph.nodes[node]['pos']
+        node_x.append(x)
+        node_y.append(y)
 
+    node_trace = go.Scatter(
+        x=node_x, y=node_y,
+        mode='markers',
+        hoverinfo='text',
+        marker=dict(
+            showscale=True,
+            # colorscale options
+            #'Greys' | 'YlGnBu' | 'Greens' | 'YlOrRd' | 'Bluered' | 'RdBu' |
+            #'Reds' | 'Blues' | 'Picnic' | 'Rainbow' | 'Portland' | 'Jet' |
+            #'Hot' | 'Blackbody' | 'Earth' | 'Electric' | 'Viridis' |
+            colorscale='YlGnBu',
+            reversescale=True,
+            color=[],
+            size=10,
+            colorbar=dict(
+                thickness=15,
+                title='Node Connections',
+                xanchor='left',
+                titleside='right'
+            ),
+            line_width=2))
+    return node_trace
+
+def generate_figure(edge_trace, node_trace, health, graph, iterations):
+    fig = go.Figure(data=[edge_trace, node_trace],
+             layout=go.Layout(
+                frames=go.Frame(data=node_trace),
+                title='<br>Network graph made with Python',
+                titlefont_size=16,
+                #width=800,
+                #height=800, 
+                showlegend=False,
+                hovermode='closest',
+                margin=dict(b=20,l=5,r=5,t=40),
+                annotations=[ dict(
+                    text="Python code: <a href='https://plotly.com/ipython-notebooks/network-graphs/'> https://plotly.com/ipython-notebooks/network-graphs/</a>",
+                    showarrow=False,
+                    xref="paper", yref="paper",
+                    x=0.005, y=-0.002 ) ],
+                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)),
+                )
+    fig['layout']['sliders']={
+        'active': 0,
+        'yanchor': 'top',
+        'xanchor': 'left',
+        'currentvalue': {
+            'font': {'size': 20},
+            'prefix': 'Iterations',
+            'visible': True,
+            'xanchor': 'right'
+        },
+        'transition': {'duration': 300, 'easing': 'cubic-in-out'},
+        'pad': {'b': 10, 't': 50},
+        'len': 0.9,
+        'x': 0.1,
+        'y': 0,
+        'steps': [...]
+    }
+    fig['layout']['updatemenus'] = [
+    {
+        'buttons': [
+            {
+                'args': [None, {'frame': {'duration': 500, 'redraw': False},
+                         'fromcurrent': True, 'transition': {'duration': 300, 'easing': 'quadratic-in-out'}}],
+                'label': 'Play',
+                'method': 'animate'
+            },
+            {
+                'args': [[None], {'frame': {'duration': 0, 'redraw': False}, 'mode': 'immediate',
+                'transition': {'duration': 0}}],
+                'label': 'Pause',
+                'method': 'animate'
+            }
+        ],
+        'direction': 'left',
+        'pad': {'r': 10, 't': 87},
+        'showactive': False,
+        'type': 'buttons',
+        'x': 0.1,
+        'xanchor': 'right',
+        'y': 0,
+        'yanchor': 'top'
+    }
+    ]
+    for iteration in iterations:
+        data_dict = {}
+
+    fig.show()
+
+def generate_graph(adj_matrix_path, skiprows=0):
+    np_array = np.loadtxt(open(adj_matrix_path, "rb"), delimiter=",", skiprows=skiprows)
+    graph = nx.from_numpy_array(np_array)
+    
+    return graph
 
 # Added
 def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **kwargs):
-
-    plt.figure(figsize=(20, 15))
 
     fig, ax = plt.subplots() 
     plt.title('Polya Urn Network')
 
     # define graph layout if None given
     if pos is None:
-        pos = nx.spring_layout(G, k = 0.08)
+        pos = nx.spring_layout(G, k = 0.5)
 
     # draw graph
     #plt.title('Polya Urn Network')
@@ -43,7 +148,7 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
     #cbar.set_label('Brand awareness')
         
     #initial
-    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 8, cmap=colormap, ax=ax, *args, **kwargs)
+    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 15, cmap=colormap, ax=ax, *args, **kwargs)
     edges = nx.draw_networkx_edges(G, pos, width = 0.25, ax=ax, *args, **kwargs)
 
     scalarmappaple.set_array(node_colors[0, :])
@@ -77,6 +182,7 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
     animation = FuncAnimation(fig, update, frames=frames, blit=True)
     plt.close()
     return animation
+
 
 # Added
 def update_super(graph):
@@ -126,8 +232,9 @@ def init_urns(graph):
         graph.nodes[node]['super_total'] = 2
         graph.nodes[node]['health'] = [0.5]
 
+
 # Added
-def pull_ball(graph):
+def pull_ball(graph, delta_blue, delta_red, num_nodes):
     #num_nodes = max(max(graph.nodes()), 1500) 
     #for node in range(num_nodes):
     for node in graph.nodes():
@@ -147,69 +254,4 @@ def pull_ball(graph):
         #graph.nodes[node]['health'].append(int((graph.nodes[node]['red']/graph.nodes[node]['total'])*100)) # Update the health of each node
 
 
-#graph = nx.complete_graph(total_nodes)
-#graph = generate_graph("./src/graph_data/Fig5_1_c_Adjacency_Matrix.txt")
-time_steps = 40
-delta_red = 1
-delta_blue = 1
-num_iters = 10
-num_nodes = graph.number_of_nodes()
 
-init_urns(graph)
-
-
-for i in range(time_steps):
-    update_super(graph)
-    pull_ball(graph)
-
-
-# health = np.empty((num_nodes, time_steps+1))
-# #for node in range(num_nodes):
-# for node in graph.nodes():
-#     health[node] = graph.nodes[node]['health']
-
-# health = np.array(health)
-
-# node_colors_r = health[:,:-1].T
-# node_colors_r_1 = health[:,:-1]
-
-# node IDs to indices 
-node_to_index = {node: i for i, node in enumerate(graph.nodes())}
-
-# Initialize the health array based on the number of nodes
-num_nodes = len(graph.nodes())
-health = np.empty((num_nodes, time_steps+1))
-
-# Use the mapping when accessing the health array
-for node in graph.nodes():
-    index = node_to_index[node]  # Convert node ID to index
-    health[index, :] = graph.nodes[node]['health']
-
-# No need to convert to np.array, health is already a NumPy array
-# health = np.array(health)
-
-node_colors_r = health[:, :-1].T  # Use slicing to exclude the last column for all rows
-node_colors_r_1 = health[:, :-1]  # This is the same as node_colors_r without transposition
-
-# Assuming node_colors_template is to be used for some other purpose and unrelated to the node-to-index mapping
-node_colors_template = np.random.randint(0, 100, size=(time_steps, num_nodes))
-
-
-node_colors_template = np.random.randint(0, 100, size=(time_steps, num_nodes))
-
-
-node_colors_test = np.ones((time_steps, num_nodes))
-
-#normalize = mcolors.Normalize(vmin=health.min(), vmax=health.max())
-normalize = mcolors.Normalize(vmin=0, vmax=1)
-#colormap = cm.jet
-colormap = mcolors.LinearSegmentedColormap.from_list("MyCmapName",["b","r"])
-colormap = plt.colormaps.get_cmap('seismic')
-
-scalarmappaple = cm.ScalarMappable(norm=normalize, cmap=colormap)
-scalarmappaple.set_array(health[0,:])
-
-
-
-animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('gifs/testall_2.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
