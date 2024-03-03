@@ -140,7 +140,7 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
 
     # define graph layout if None given
     if pos is None:
-        pos = nx.spring_layout(G, k = 0.5)
+        pos = nx.spring_layout(G, k = 0.08)
 
     # draw graph
     #plt.title('Polya Urn Network')
