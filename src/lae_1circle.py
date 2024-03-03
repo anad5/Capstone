@@ -39,19 +39,7 @@ init_urns(graph)
 # node IDs to indices 
 node_to_index = {node: i for i, node in enumerate(graph.nodes())}
 
-# susceptability is calculated every time step, degree and centrality arent? 
-susceptibility_score = {}
-
-for i in range(time_steps):
-    update_super(graph)
-    pull_ball(graph, delta_blue, delta_red, num_nodes)
-    all_score = {}
-    for node in graph.nodes():
-        node_idx = node_to_index[node]
-        score = calc_susceptibility(graph, node, 'red', 'total')
-        all_score[node_idx] = score
-    susceptibility_score[i] = all_score 
-
+# calculate degree and centrality outside of time step loop 
 deg_score = {}
 for node in graph.nodes():
     node_idx = node_to_index[node]
@@ -62,26 +50,63 @@ central_score = {}
 for node in graph.nodes():
     node_idx = node_to_index[node]
     score = calc_centrality(graph, node)
-    central_score[node_idx] = score 
+    central_score[node_idx] = score
+
+# susceptability is calculated every time step, degree and centrality arent? 
+
+all_scores = {} 
+beta = 1
+gamma = 1
+alpha = 1
+
+for i in range(time_steps):
+    update_super(graph)
+    pull_ball(graph, delta_blue, delta_red, num_nodes)
+    suscept_score = {}
+    for node in graph.nodes():
+        node_idx = node_to_index[node]
+        score = calc_susceptibility(graph, node, 'red', 'total')
+        suscept_score[node_idx] = score
+    #susceptibility_score[i] = all_score 
+    
+    # calculating heuristic scores 
+    all_scores[i] = {}
+    for node in graph.nodes():
+        node_idx = node_to_index[node]
+        degree_score = deg_score[node_idx] 
+        centrality_score = central_score[node_idx]  
+        susceptibility_score = suscept_score[node_idx]
+        
+        # Calculate the combined score using the formula from the screenshot
+        combined = beta * degree_score + gamma * centrality_score - alpha * susceptibility_score
+        all_scores[i][node_idx] = combined
+
+# testing to determine scores 
+with open('network_allscores.txt', 'w') as file: 
+    file.write("Heuristic Scores by Time Step : \n")
+    for time_step, scores in all_scores.items():
+        file.write(f"Time Step {time_step}: \n")
+        for node, score in scores.items():
+            file.write(f"Node {node}: {score} \n")
 
 # testing if the functions are actually working 
-with open('network_scores.txt', 'w') as file:
-    # susceptability 
-    file.write("Susceptibility Scores by Time Step:\n")
-    for time_step, scores in susceptibility_score.items():
-        file.write(f"Time Step {time_step}:\n")
-        for node, score in scores.items():
-            file.write(f"Node {node}: {score}\n")
+# with open('network_scores.txt', 'w') as file:
+#     # susceptability 
+#     file.write("Susceptibility Scores by Time Step:\n")
+#     for time_step, scores in susceptibility_score.items():
+#         file.write(f"Time Step {time_step}:\n")
+#         for node, score in scores.items():
+#             file.write(f"Node {node}: {score}\n")
     
-    # degree
-    file.write("\nDegree Scores:\n")
-    for node, score in deg_score.items():
-        file.write(f"Node {node}: {score}\n")
+#     # degree
+#     file.write("\nDegree Scores:\n")
+#     for node, score in deg_score.items():
+#         file.write(f"Node {node}: {score}\n")
 
-    # centrality 
-    file.write("\nCentrality Scores:\n")
-    for node, score in central_score.items():
-        file.write(f"Node {node}: {score}\n")
+#     # centrality 
+#     file.write("\nCentrality Scores:\n")
+#     for node, score in central_score.items():
+#         file.write(f"Node {node}: {score}\n")
 
 
 # health = np.empty((num_nodes, time_steps+1))
