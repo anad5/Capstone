@@ -118,20 +118,31 @@ def pull_ball(graph, delta_red, delta_blue):
             graph.nodes[node]['blue'] += delta_blue
             graph.nodes[node]['total'] += delta_blue
             graph.nodes[node]['history'].append(0) # Add blue ball indicator to history
-        graph.nodes[node]['health'].append((graph.nodes[node]['red']/graph.nodes[node]['total'])) # Update the health of each node
+        graph.nodes[node]['health'].append((graph.nodes[node]['super_red']/graph.nodes[node]['super_total'])) # Update the health of each node
         #graph.nodes[node]['health'].append(int((graph.nodes[node]['red']/graph.nodes[node]['total'])*100)) # Update the health of each node
 
-def calc_health(graph):
+def plot_health(health, graph):
     """
     Function to plot the overall "health" of the network over all timesteps
+
+    Args:
+        graph: Networkx graph structure.
+        health: Array of health values at each timestep.
+
+    Returns:
+        None.
+
+    Raises:
+        None.
     """
     num_nodes = graph.number_of_nodes()
-    total_health = 0
-    for node in range(num_nodes):
-        total_health += graph.nodes[node]['health'] 
-        
-        
+    avg_health = np.sum(health[:,:-1], axis=0)/num_nodes
+    plt.plot(avg_health)
+    plt.xlabel('Timestep')
+    plt.ylabel('Average Network Exposure')
 
+    plt.show()
+        
 
 
 def init_urns(graph, init_red, init_blue):

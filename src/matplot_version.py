@@ -5,7 +5,7 @@ from matplotlib.animation import FuncAnimation
 import random as rd
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
-from util_new import animate_nodes, update_super, pull_ball, init_urns, generate_graph
+from util_new import animate_nodes, update_super, pull_ball, init_urns, generate_graph, plot_health
 
 '''
 # Added
@@ -108,13 +108,7 @@ for node in range(num_nodes):
 
 health = np.array(health)
 
-avg_health = np.sum(health[:,:-1], axis=0)/num_nodes
-plt.plot(avg_health)
-plt.xlabel('Timestep')
-plt.ylabel('Average Network Exposure')
-
-plt.show()
-#print(avg_health[1:4])
+plot_health(health, graph)
 
 
 node_colors_r = health[:,:-1].T
