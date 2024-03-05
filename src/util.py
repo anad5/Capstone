@@ -184,24 +184,103 @@ def heuristic(degree, centrality, susceptibility):
     gamma = 1
     return beta*degree+gamma*centrality-alpha*susceptibility
 
-def get_scores(G):
+def get_scores(G, i):
+    """
+    Function to calculate heuristic scores for each node in a graph.
+
+    Args:
+        G: networkx graph structure
+        i: time index to get health values.
+
+    Returns:
+        4xn numpy array with attributes and scores - scores in row 4.
+
+    Raises:
+        None.
+    """
     # Can return these as dictionaries or as numpy arrays
     # Reference these metrics for choice of centrality https://networkx.org/documentation/stable/reference/algorithms/centrality.html
     closeness = nx.closeness_centrality(G) # Dictionary with closeness values, index by node number
-    katz = nx.katz_centrality_numpy(G, alpha=0.1) # Numpy array with katz centrality values
-    eigen_centrality = nx.eigenvector_centrality(G) # Dictionary with closeness values, index by node number
+    #katz = nx.katz_centrality_numpy(G, alpha=0.1) # Numpy array with katz centrality values
+    #eigen_centrality = nx.eigenvector_centrality(G) # Dictionary with closeness values, index by node number
 
     num_nodes = G.number_of_nodes()
     scores = np.empty((4, num_nodes))
     for node in range(num_nodes):
         degree = G.degree[node]
-        centrality = 1 # TODO: Choose centrality metric
-        susceptibility = G.nodes[node]['health'] # TODO: Health is currently a list not an int, choose most recent or add new attribute of only most recent
-        scores[1,node] = degree
-        scores[2,node] = centrality
-        scores[3,node] = susceptibility
-        scores[4,node] = heuristic(degree, centrality, susceptibility)
+        centrality = closeness[node] # TODO: Choose centrality metric
+        susceptibility = G.nodes[node]['health'][i] # TODO: Health is currently a list not an int, choose most recent or add new attribute of only most recent
+        scores[0,node] = degree
+        scores[1,node] = centrality
+        scores[2,node] = susceptibility
+        scores[3,node] = int(heuristic(degree, centrality, susceptibility))
     return scores
+
+def inject_uniform_red(G, scores, budget, topn=15):
+    """
+    Function to inject red balls to urns with the top n scores uniformly
+
+    Args:
+        graph: Networkx graph structure.
+        health: Array of health values at each timestep.
+
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
+    for i in sorted(range(len(scores[3,:])), key=lambda i: scores[3,i])[-topn:]:
+        if budget/topn < 1:
+            print("warning, no balls being added because budget being spread too thin")
+        G.nodes[i]['red'] += int(budget/topn)
+
+def inject_relative_red(G, scores, budget):
+    """
+    Function to inject red balls to urns with the top n scores relative to their scores
+
+    Args:
+        G: Networkx graph structure.
+        scores: Array of heuristic scores.
+
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
+    total = np.sum(scores[3,:])
+    for i in range(len(scores[3,:])):
+        relative = scores[3,i]/total
+        if budget*relative<1:
+            print("warning, no balls being added because budget being spread too thin")
+        else:
+            test = 1
+        G.nodes[i]['red'] += int(budget*relative)
+
+
+
+def plot_health(G, health):
+    """
+    Function to plot the overall "health" of the network over all timesteps
+
+    Args:
+        graph: Networkx graph structure.
+        health: Array of health values at each timestep.
+
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
+    num_nodes = G.number_of_nodes()
+    avg_health = np.sum(health[:,:-1], axis=0)/num_nodes
+    plt.plot(avg_health)
+    plt.xlabel('Timestep')
+    plt.ylabel('Average Network Exposure')
+
+    plt.show()
 
 def pyvis_animation(G, width='500px', height='500px'):
     """
