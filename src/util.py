@@ -248,8 +248,8 @@ def inject_uniform_red(G, scores, budget, topn=15):
         if budget / topn < 1:
             print("warning, no balls being added because budget being spread too thin")
         else:
-            if graph.graph['memory_flag'] == True:
-                graph.nodes[node]['history'][-1] += int(budget / topn)
+            if G.graph['memory_flag'] == True:
+                G.nodes[i]['history'][-1] += int(budget / topn)
             else:
                 G.nodes[i]['red'] += int(budget / topn)
 
@@ -274,8 +274,8 @@ def inject_relative_red(G, scores, budget):
         if budget * relative < 1:
             print("warning, no balls being added because budget being spread too thin")
         else:
-            if graph.graph['memory_flag'] == True:
-                graph.nodes[node]['history'][-1] += int(budget * relative)
+            if G.graph['memory_flag'] == True:
+                G.nodes[i]['history'][-1] += int(budget * relative)
             else:
                 G.nodes[i]['red'] += int(budget * relative)
 
