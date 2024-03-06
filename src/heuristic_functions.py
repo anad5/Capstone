@@ -41,5 +41,18 @@ def calc_centrality(graph, node):
         centrality = 0
     return centrality 
 
+def score_midpoint(scores):
+    # Calculate the average and maximum score
+    average_score = sum(scores.values()) / len(scores)
+    max_score = max(scores.values())
+    
+    # Find the midpoint between the average and max score
+    midpoint = (average_score + max_score) / 2
+    
+    # Identify nodes with scores above the midpoint
+    nodes_above_midpoint = [node for node, score in scores.items() if score > midpoint]
+    
+    return nodes_above_midpoint
+
 
 

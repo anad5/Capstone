@@ -1,3 +1,4 @@
+from collections import deque
 import plotly.graph_objects as go
 import networkx as nx
 import numpy as np
@@ -231,7 +232,7 @@ def init_urns(graph):
         graph.nodes[node]['super_blue'] = 2
         graph.nodes[node]['super_total'] = 2
         graph.nodes[node]['health'] = [0.5]
-
+    
 
 # Added
 def pull_ball(graph, delta_blue, delta_red, num_nodes):
@@ -250,8 +251,28 @@ def pull_ball(graph, delta_blue, delta_red, num_nodes):
         else:
             graph.nodes[node]['blue'] += delta_blue
             graph.nodes[node]['total'] += delta_blue
-        graph.nodes[node]['health'].append((graph.nodes[node]['red']/graph.nodes[node]['total'])) # Update the health of each node
+        #graph.nodes[node]['health'].append((graph.nodes[node]['red']/graph.nodes[node]['total'])) # Update the health of each node
         #graph.nodes[node]['health'].append(int((graph.nodes[node]['red']/graph.nodes[node]['total'])*100)) # Update the health of each node
+        graph.nodes[node]['health'].append((graph.nodes[node]['super_red']/graph.nodes[node]['super_total']))
 
+def plot_health(health, graph):
+    """
+    Function to plot the overall "health" of the network over all timesteps
 
+    Args:
+        graph: Networkx graph structure.
+        health: Array of health values at each timestep.
 
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
+    num_nodes = graph.number_of_nodes()
+    avg_health = np.sum(health[:,:-1], axis=0)/num_nodes
+    plt.plot(avg_health)
+    plt.xlabel('Timestep')
+    plt.ylabel('Average Network Exposure')
+
+    plt.show()
