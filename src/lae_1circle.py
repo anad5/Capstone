@@ -74,7 +74,7 @@ for i in range(time_steps):
         centrality_score = central_score[node_idx]  
         susceptibility_score = suscept_score[node_idx]
         
-        # Calculate the combined score using the formula from the screenshot
+        # calculate the combined score using the formula from the screenshot
         combined = beta * degree_score + gamma * centrality_score - alpha * susceptibility_score
         all_scores[i][node_idx] = combined
 
@@ -116,7 +116,7 @@ for i in range(time_steps):
 health = np.empty((num_nodes, time_steps+1))
 #for node in range(num_nodes):
 for node in graph.nodes():
-    index = node_to_index[node]  # Convert node ID to index
+    index = node_to_index[node] 
     health[index, :] = graph.nodes[node]['health']
     #health[node] = graph.nodes[node]['health']
 
@@ -127,18 +127,14 @@ plot_health(health, graph)
 # node_colors_r = health[:,:-1].T
 # node_colors_r_1 = health[:,:-1]
 
-
 # Initialize the health array based on the number of nodes
-num_nodes = len(graph.nodes())
-health = np.empty((num_nodes, time_steps+1))
+# num_nodes = len(graph.nodes())
+# health = np.empty((num_nodes, time_steps+1))
 
-# Use the mapping when accessing the health array
-for node in graph.nodes():
-    index = node_to_index[node]  # Convert node ID to index
-    health[index, :] = graph.nodes[node]['health']
+# for node in graph.nodes():
+#     index = node_to_index[node] 
+#     health[index, :] = graph.nodes[node]['health']
 
-# No need to convert to np.array, health is already a NumPy array
-# health = np.array(health)
 
 node_colors_r = health[:, :-1].T  # Use slicing to exclude the last column for all rows
 node_colors_r_1 = health[:, :-1]  # This is the same as node_colors_r without transposition

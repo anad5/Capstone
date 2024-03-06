@@ -8,9 +8,9 @@ import random as rd
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 
-from util_lae import generate_graph, animate_nodes, update_super, init_urns, pull_ball
+from util_lae import generate_graph, animate_nodes, update_super, init_urns, pull_ball, plot_health
 from graph_dataALL import combine_graphs
-from heuristic_functions import calc_centrality, calc_degree, calc_susceptibility
+from heuristic_functions import calc_centrality, calc_degree, calc_susceptibility, score_midpoint
 
 # folder with all edge files 
 circle_files_path = 'circles'
@@ -84,6 +84,23 @@ for i in range(time_steps):
         # Calculate the combined score using the formula from the screenshot
         combined = beta * degree_score + gamma * centrality_score - alpha * susceptibility_score
         all_scores[i][node_idx] = combined
+
+        nodes_midpoint = score_midpoint(all_scores[i])
+    delta_red = 1
+    for node_idx in nodes_midpoint:
+        graph.nodes[node_idx]['red'] += delta_red
+        graph.nodes[node_idx]['total'] += delta_red
+
+health = np.empty((num_nodes, time_steps+1))
+#for node in range(num_nodes):
+for node in graph.nodes():
+    index = node_to_index[node]  # Convert node ID to index
+    health[index, :] = graph.nodes[node]['health']
+    #health[node] = graph.nodes[node]['health']
+
+health = np.array(health)
+
+plot_health(health, graph)
 
 
 # health = np.empty((num_nodes, time_steps+1))

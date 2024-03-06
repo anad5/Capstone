@@ -141,7 +141,7 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
 
     # define graph layout if None given
     if pos is None:
-        pos = nx.spring_layout(G, k = 0.5)
+        pos = nx.spring_layout(G, k = 0.07)
 
     # draw graph
     #plt.title('Polya Urn Network')
@@ -253,6 +253,7 @@ def pull_ball(graph, delta_blue, delta_red, num_nodes):
             graph.nodes[node]['total'] += delta_blue
         #graph.nodes[node]['health'].append((graph.nodes[node]['red']/graph.nodes[node]['total'])) # Update the health of each node
         #graph.nodes[node]['health'].append(int((graph.nodes[node]['red']/graph.nodes[node]['total'])*100)) # Update the health of each node
+        # graph of health doesn't look right when we add super urns 
         graph.nodes[node]['health'].append((graph.nodes[node]['super_red']/graph.nodes[node]['super_total']))
 
 def plot_health(health, graph):
