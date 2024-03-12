@@ -5,25 +5,48 @@ from matplotlib.animation import FuncAnimation
 import random as rd
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
-from util import animate_nodes, update_super, pull_ball, init_urns, generate_graph, pyvis_animation, get_scores, plot_health, inject_uniform_red, inject_relative_red
+from util import animate_nodes, update_super, pull_ball, init_urns, generate_graph, pyvis_animation, get_scores, plot_health, inject_uniform_red, inject_relative_red, combine_graphs
 
 #graph = nx.complete_graph(total_nodes)
-graph = generate_graph("./src/graph_data/Fig5_1_c_Adjacency_Matrix.txt")
-time_steps = 10
+circles = True
+
+if circles:
+    circle_files_path = 'circles'
+
+    # combined graph file with edges
+    combined_file_path = 'circles/facebook_combined.txt'
+
+    # combine all graphs into one
+    graph = combine_graphs(circle_files_path, combined_file_path)
+
+    # count the number of nodes in the graph to double check all circles are being brought in 
+    num_nodes = graph.number_of_nodes()
+    print("Number of nodes in the combined graph:", num_nodes)
+else:
+    graph = generate_graph("./src/graph_data/Fig5_1_c_Adjacency_Matrix.txt")
+    num_nodes = graph.number_of_nodes()
+    print("Number of nodes in the combined graph:", num_nodes)
+
+
+time_steps = 50
 delta_red = 1
 delta_blue = 1
-init_red=2
-init_blue=2
-num_nodes = graph.number_of_nodes()
-budget = 20
+init_red=10
+init_blue=10
+budget = 100
 
 init_urns(graph, init_red, init_blue)
 
+closeness = nx.closeness_centrality(graph) # Calculate closeness once and then just pass as arg to score function
+
 for i in range(time_steps):
     update_super(graph)
-    scores = get_scores(graph, i)
+    scores = get_scores(graph, i, closeness, quantize=False)
     #inject_uniform_red(graph, scores, budget)
-    inject_relative_red(graph, scores, budget)
+    if i < 2:
+        print("Test")
+    else:
+        inject_relative_red(graph, scores, budget)    
     pull_ball(graph, delta_red, delta_blue)
 
 health = np.empty((num_nodes, time_steps+1))

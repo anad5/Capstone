@@ -5,6 +5,41 @@ import random as rd
 import numpy as np
 from collections import deque
 from pyvis.network import Network
+from datetime import datetime
+import os
+
+def combine_graphs(circle_files_directory, combined_file=None):
+    # create G empty graph 
+    G = nx.Graph()
+    
+    # combined edges file 
+    if combined_file:
+        with open(combined_file, 'r') as f:
+            for line in f:
+                try:
+                    parts = line.strip().split()
+                    if len(parts) == 2:
+                        src, dst = map(int, parts)
+                        G.add_edge(src, dst)
+                except ValueError:
+                    # I DONT KNOW WHY THESE DON'T WORK NEED TO FIGURE OUT
+                    print(f"Skipping line with invalid integers: {line.strip()}")
+
+    # adding the edges from individual circle edge file 
+    for edge_file_name in os.listdir(circle_files_directory):
+        edge_file_path = os.path.join(circle_files_directory, edge_file_name)
+        with open(edge_file_path, 'r') as f:
+            for line in f:
+                try:
+                    parts = line.strip().split()
+                    if len(parts) == 2:
+                        src, dst = map(int, parts)
+                        G.add_edge(src, dst)
+                except ValueError:
+                    # CHECK THIS 
+                    print(f"Skipping line with invalid integers: {line.strip()}")
+
+    return G
 
 def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **kwargs):
     """
@@ -27,7 +62,7 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
     """
     # define graph layout if None given
     if pos is None:
-        pos = nx.spring_layout(G)
+        pos = nx.spring_layout(G, k=1)
 
     # draw graph
     plt.title('Polya Urn Network')
@@ -106,23 +141,28 @@ def pull_ball(graph, delta_red, delta_blue):
         if graph.graph['memory_flag'] == True:
             if len(graph.nodes[node]['history']) == graph.nodes[node]['memory']:
                 disapearing = graph.nodes[node]['history'].popleft()
-                if disapearing == 1:
-                    graph.nodes[node]['red'] -= 1
+                #testing#
+                graph.nodes[node]['red'] -= disapearing[0]
+                graph.nodes[node]['blue'] -= disapearing[1]
+                graph.nodes[node]['total'] -= sum(disapearing)
+                #testing#
+                '''if disapearing > 0:
+                    graph.nodes[node]['red'] -= disapearing
                 else:
-                    graph.nodes[node]['blue'] -= 1
+                    graph.nodes[node]['blue'] -= 1'''
         random_pull = rd.uniform(0,1)
         threshold = graph.nodes[node]['super_red']/graph.nodes[node]['super_total']
         if random_pull < threshold: # Pulled a red ball
             graph.nodes[node]['red'] += delta_red
             graph.nodes[node]['total'] += delta_red
             if graph.graph['memory_flag'] == True:
-                graph.nodes[node]['history'].append(1) # Add red ball indicator to history
+                graph.nodes[node]['history'].append([1,0]) # Add red ball indicator to history
         else:
             graph.nodes[node]['blue'] += delta_blue
             graph.nodes[node]['total'] += delta_blue
             if graph.graph['memory_flag'] == True:
-                graph.nodes[node]['history'].append(0) # Add blue ball indicator to history
-        graph.nodes[node]['health'].append((graph.nodes[node]['red']/graph.nodes[node]['total'])) # Update the health of each node
+                graph.nodes[node]['history'].append([0,1]) # Add blue ball indicator to history
+        graph.nodes[node]['health'].append((graph.nodes[node]['super_red']/graph.nodes[node]['super_total'])) # Update the health of each node
         #graph.nodes[node]['health'].append(int((graph.nodes[node]['red']/graph.nodes[node]['total'])*100)) # Update the health of each node
 
 def init_urns(graph, init_red, init_blue, memory=5, memory_list=None):
@@ -184,7 +224,14 @@ def heuristic(degree, centrality, susceptibility):
     gamma = 1
     return beta*degree+gamma*centrality-alpha*susceptibility
 
-def get_scores(G, i):
+def quantize_score(score, levels=[0,10,20,30,40,50,60]):
+    for level in range(levels):
+        if score<levels[level+1]:
+            score = levels[level]
+            return score
+    return levels[-1]
+
+def get_scores(G, i, closeness, quantize=True):
     """
     Function to calculate heuristic scores for each node in a graph.
 
@@ -200,7 +247,7 @@ def get_scores(G, i):
     """
     # Can return these as dictionaries or as numpy arrays
     # Reference these metrics for choice of centrality https://networkx.org/documentation/stable/reference/algorithms/centrality.html
-    closeness = nx.closeness_centrality(G) # Dictionary with closeness values, index by node number
+    # Dictionary with closeness values, index by node number
     #katz = nx.katz_centrality_numpy(G, alpha=0.1) # Numpy array with katz centrality values
     #eigen_centrality = nx.eigenvector_centrality(G) # Dictionary with closeness values, index by node number
 
@@ -213,7 +260,12 @@ def get_scores(G, i):
         scores[0,node] = degree
         scores[1,node] = centrality
         scores[2,node] = susceptibility
-        scores[3,node] = int(heuristic(degree, centrality, susceptibility))
+        if quantize:
+            score = int(heuristic(degree, centrality, susceptibility))
+            quantized_score = quantize_score(score)
+            scores[3,node] = quantized_score
+        else:
+            scores[3,node] = int(heuristic(degree, centrality, susceptibility))
     return scores
 
 def inject_uniform_red(G, scores, budget, topn=15):
@@ -230,10 +282,14 @@ def inject_uniform_red(G, scores, budget, topn=15):
     Raises:
         None.
     """
-    for i in sorted(range(len(scores[3,:])), key=lambda i: scores[3,i])[-topn:]:
-        if budget/topn < 1:
+    for i in sorted(range(len(scores[3, :])), key=lambda i: scores[3, i])[-topn:]:
+        if budget / topn < 1:
             print("warning, no balls being added because budget being spread too thin")
-        G.nodes[i]['red'] += int(budget/topn)
+        else:
+            if G.graph['memory_flag'] == True:
+                G.nodes[i]['history'][-1][0] += int(budget / topn)
+            else:
+                G.nodes[i]['red'] += int(budget / topn)
 
 def inject_relative_red(G, scores, budget):
     """
@@ -249,15 +305,20 @@ def inject_relative_red(G, scores, budget):
     Raises:
         None.
     """
-    total = np.sum(scores[3,:])
-    for i in range(len(scores[3,:])):
-        relative = scores[3,i]/total
-        if budget*relative<1:
+    total = np.sum(scores[3, :])
+    for i in range(len(scores[3, :])):
+        relative = scores[3, i] / total
+        if budget * relative < 1:
             print("warning, no balls being added because budget being spread too thin")
         else:
-            test = 1
-        G.nodes[i]['red'] += int(budget*relative)
-
+            if G.graph['memory_flag'] == True:
+                amount = int(budget * relative)
+                G.nodes[i]['history'][-1][0] += amount
+                G.nodes[i]['red'] += amount
+                G.nodes[i]['total'] += amount
+            else:
+                G.nodes[i]['red'] += int(budget * relative)
+                G.nodes[i]['total'] += amount
 
 
 def plot_health(G, health):
@@ -280,7 +341,13 @@ def plot_health(G, health):
     plt.xlabel('Timestep')
     plt.ylabel('Average Network Exposure')
 
+    
+    date_time = datetime.now()
+    day = date_time.day
+    hour = date_time.hour
+    plt.savefig(f"./figures/health_plot_day{day}_hour{hour}")
     plt.show()
+
 
 def pyvis_animation(G, width='500px', height='500px'):
     """
