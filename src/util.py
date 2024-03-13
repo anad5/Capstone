@@ -62,7 +62,7 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
     """
     # define graph layout if None given
     if pos is None:
-        pos = nx.spring_layout(G, k=1)
+        pos = nx.spring_layout(G, k = 0.08)
 
     # draw graph
     plt.title('Polya Urn Network')
@@ -91,6 +91,58 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
     fig = plt.gcf()
     frames=len(node_colors[:,0])
     animation = FuncAnimation(fig, update, interval=50, frames=len(node_colors[:,0]), blit=True)
+    return animation
+
+def animate_nodes_lae(G, node_colors, scalarmappaple, colormap, pos=None, *args, **kwargs):
+
+    plt.figure(figsize=(20, 15))
+
+    fig, ax = plt.subplots() 
+    plt.title('Polya Urn Network')
+
+    # define graph layout if None given
+    if pos is None:
+        pos = nx.spring_layout(G, k = 0.08)
+
+    # draw graph
+    #plt.title('Polya Urn Network')
+    #cbar = plt.colorbar(scalarmappaple)
+    #cbar.set_label('Brand awareness')
+        
+    #initial
+    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 8, cmap=colormap, ax=ax, *args, **kwargs)
+    edges = nx.draw_networkx_edges(G, pos, width = 0.25, ax=ax, *args, **kwargs)
+
+    scalarmappaple.set_array(node_colors[0, :])
+
+    cbar = fig.colorbar(scalarmappaple, ax=ax)  # Specify the ax argument
+    cbar.set_label('Brand awareness', fontsize=12)
+
+    #rgba_array_i = scalarmappaple.to_rgba(node_colors[0,:])
+    #nodes = nx.draw_networkx_nodes(G, pos, node_color=rgba_array_i, cmap=colormap , *args, **kwargs)
+    #nodes = nx.draw_networkx_nodes(G, pos, cmap=colormap , *args, **kwargs)
+    #edges = nx.draw_networkx_edges(G, pos, *args, **kwargs)
+    #nodes.set_cmap(colormap)
+    #plt.axis('off')
+
+    #nodes.set_array(node_colors[0])
+    def update(ii):
+        # nodes are just markers returned by plt.scatter;
+        # node color can hence be changed in the same way like marker colors\
+        rgba_array = scalarmappaple.to_rgba(node_colors[ii,:])
+        nodes.set_color(rgba_array)
+        #nodes = nx.draw_networkx_nodes(G, pos, node_color=rgba_array, cmap=colormap , *args, **kwargs)
+        #test1 = np.expand_dims(test, axis=1)
+        #test2 = np.broadcast_to(test1, (test1.shape[0], 4))
+        #nodes.set_facecolor(test2)
+        #nodes.set_array(test)
+        return nodes,
+
+    #fig = plt.gcf()
+    frames=len(node_colors[:,0])
+    #animation = FuncAnimation(fig, update, interval=50, frames=len(node_colors[:,0]), blit=True)
+    animation = FuncAnimation(fig, update, frames=frames, blit=True)
+    plt.close()
     return animation
 
 def update_super(graph):
