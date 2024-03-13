@@ -27,7 +27,7 @@ print("Number of nodes in the combined graph:", number_of_nodes)
 
 #graph = nx.complete_graph(total_nodes)
 #graph = generate_graph("./src/graph_data/Fig5_1_c_Adjacency_Matrix.txt")
-time_steps = 40
+time_steps = 10
 delta_red = 1
 delta_blue = 1
 num_iters = 10
@@ -62,6 +62,7 @@ all_scores = {}
 beta = 1
 gamma = 1
 alpha = 1
+budget_red = 10 
 
 for i in range(time_steps):
     update_super(graph)
@@ -86,21 +87,28 @@ for i in range(time_steps):
         all_scores[i][node_idx] = combined
 
         nodes_midpoint = score_midpoint(all_scores[i])
+    
+    added_balls = 0 
     delta_red = 1
     for node_idx in nodes_midpoint:
-        graph.nodes[node_idx]['red'] += delta_red
-        graph.nodes[node_idx]['total'] += delta_red
+        if delta_red + added_balls <= budget_red:
+            graph.nodes[node_idx]['red'] += delta_red
+            graph.nodes[node_idx]['total'] += delta_red
+            added_balls += delta_red 
+            budget_red -= delta_red 
+        else:
+            break 
 
-health = np.empty((num_nodes, time_steps+1))
-#for node in range(num_nodes):
-for node in graph.nodes():
-    index = node_to_index[node]  # Convert node ID to index
-    health[index, :] = graph.nodes[node]['health']
-    #health[node] = graph.nodes[node]['health']
+# health = np.empty((num_nodes, time_steps+1))
+# #for node in range(num_nodes):
+# for node in graph.nodes():
+#     index = node_to_index[node]  # Convert node ID to index
+#     health[index, :] = graph.nodes[node]['health']
+#     #health[node] = graph.nodes[node]['health']
 
-health = np.array(health)
+# health = np.array(health)
 
-plot_health(health, graph)
+# plot_health(health, graph)
 
 
 # health = np.empty((num_nodes, time_steps+1))
@@ -152,4 +160,4 @@ scalarmappaple.set_array(health[0,:])
 
 
 animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('gifs/heuristic_all.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+animation.save('gifs/heuristic_testbudget.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)

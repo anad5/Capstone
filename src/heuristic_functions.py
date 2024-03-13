@@ -33,6 +33,7 @@ def calc_centrality(graph, node):
     #return centrality_dict[node]
 
     # new try 
+    # need to look into the different options for shortest path length
     node_path = nx.single_source_shortest_path_length(graph, node)
     distance = sum(node_path.values())
     if distance > 0:
