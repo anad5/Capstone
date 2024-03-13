@@ -110,7 +110,7 @@ def animate_nodes_lae(G, node_colors, scalarmappaple, colormap, pos=None, *args,
     #cbar.set_label('Brand awareness')
         
     #initial
-    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 8, cmap=colormap, ax=ax, *args, **kwargs)
+    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 8, cmap=colormap, ax=ax, edgecolors=node_colors[0, :],  *args, **kwargs)
     edges = nx.draw_networkx_edges(G, pos, width = 0.25, ax=ax, *args, **kwargs)
 
     scalarmappaple.set_array(node_colors[0, :])
@@ -217,7 +217,7 @@ def pull_ball(graph, delta_red, delta_blue):
         graph.nodes[node]['health'].append((graph.nodes[node]['super_red']/graph.nodes[node]['super_total'])) # Update the health of each node
         #graph.nodes[node]['health'].append(int((graph.nodes[node]['red']/graph.nodes[node]['total'])*100)) # Update the health of each node
 
-def init_urns(graph, init_red, init_blue, memory=5, memory_list=None):
+def init_urns(graph, init_red, init_blue, memory=5, memory_list=None, init_blue_list=None, init_red_list=None):
     """
     Function to initialize red and blue balls in urns and super urns.
 
@@ -236,6 +236,10 @@ def init_urns(graph, init_red, init_blue, memory=5, memory_list=None):
     """
     num_nodes = graph.number_of_nodes()
     for node in range(num_nodes):
+        if init_blue_list.any():
+            init_blue=init_blue_list[node]
+        if init_red_list.any():
+            init_red = init_red_list[node]
         # i, red=2, blue=2, total=4, super_red=2, super_blue=2, super_total=4, health=[1], pos=(i,1)
         graph.nodes[node]['red'] = init_red
         graph.nodes[node]['blue'] = init_blue
@@ -245,11 +249,11 @@ def init_urns(graph, init_red, init_blue, memory=5, memory_list=None):
         graph.nodes[node]['super_total'] = init_red + init_blue
         graph.nodes[node]['health'] = [init_red/(init_blue+init_red)]
         if graph.graph['memory_flag'] == True:
-            if memory_list != None: # Distinct memory values for urns
+            if memory_list.any(): # Distinct memory values for urns
                 graph.nodes[node]['memory'] = memory_list[node]
             else: # Uniform memory distribution
                 graph.nodes[node]['memory'] = memory
-            graph.nodes[node]['history'] = deque(maxlen=graph.nodes[node]['memory']) # Deque to store information on which balls to be removed at what times
+            graph.nodes[node]['history'] = deque(maxlen=int(graph.nodes[node]['memory'])) # Deque to store information on which balls to be removed at what times
             
 def generate_graph(adj_matrix_path, memory_flag=True, skiprows=0):
     """
@@ -270,10 +274,7 @@ def generate_graph(adj_matrix_path, memory_flag=True, skiprows=0):
     G.graph['memory_flag'] = memory_flag
     return G
 
-def heuristic(degree, centrality, susceptibility):
-    alpha = 1
-    beta = 1
-    gamma = 1
+def heuristic(degree, centrality, susceptibility, alpha, beta, gamma):
     return beta*degree+gamma*centrality-alpha*susceptibility
 
 def quantize_score(score, levels=[0,10,20,30,40,50,60]):
@@ -283,7 +284,7 @@ def quantize_score(score, levels=[0,10,20,30,40,50,60]):
             return score
     return levels[-1]
 
-def get_scores(G, i, closeness, quantize=True):
+def get_scores(G, i, closeness, alpha, beta, gamma, quantize=True):
     """
     Function to calculate heuristic scores for each node in a graph.
 
@@ -313,11 +314,11 @@ def get_scores(G, i, closeness, quantize=True):
         scores[1,node] = centrality
         scores[2,node] = susceptibility
         if quantize:
-            score = int(heuristic(degree, centrality, susceptibility))
+            score = int(heuristic(degree, centrality, susceptibility, alpha, beta, gamma))
             quantized_score = quantize_score(score)
             scores[3,node] = quantized_score
         else:
-            scores[3,node] = int(heuristic(degree, centrality, susceptibility))
+            scores[3,node] = int(heuristic(degree, centrality, susceptibility, alpha, beta, gamma))
     return scores
 
 def inject_uniform_red(G, scores, budget, topn=15):
@@ -361,7 +362,8 @@ def inject_relative_red(G, scores, budget):
     for i in range(len(scores[3, :])):
         relative = scores[3, i] / total
         if budget * relative < 1:
-            print("warning, no balls being added because budget being spread too thin")
+            test = 1
+            #print("warning, no balls being added because budget being spread too thin")
         else:
             if G.graph['memory_flag'] == True:
                 amount = int(budget * relative)
@@ -373,7 +375,7 @@ def inject_relative_red(G, scores, budget):
                 G.nodes[i]['total'] += amount
 
 
-def plot_health(G, health):
+def plot_health(G, health, alpha=1, beta=1, gamma=1):
     """
     Function to plot the overall "health" of the network over all timesteps
 
@@ -394,10 +396,7 @@ def plot_health(G, health):
     plt.ylabel('Average Network Exposure')
 
     
-    date_time = datetime.now()
-    day = date_time.day
-    hour = date_time.hour
-    plt.savefig(f"./figures/health_plot_day{day}_hour{hour}")
+    plt.savefig(f"./figures/health_plot_alpha{beta}_beta{beta}_gamma{gamma}")
     plt.show()
 
 

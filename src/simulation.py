@@ -30,20 +30,32 @@ else:
     print("Number of nodes in the combined graph:", num_nodes)
 
 
-time_steps = 50
+time_steps = 100
 delta_red = 1
 delta_blue = 1
 init_red=10
 init_blue=10
-budget = 100
+budget = 500
+alpha = 1
+beta = 1
+gamma = 1
 
-init_urns(graph, init_red, init_blue)
+memory_list = np.random.default_rng().normal(9, 3, size=num_nodes).astype(int)
+memory_list = np.where(memory_list<=0, 1, memory_list)
+
+init_red_list = np.random.default_rng().normal(10, 2, size=num_nodes).astype(int)
+init_red_list = np.where(init_red_list<=0, 1, init_red_list)
+
+init_blue_list = np.random.default_rng().normal(10, 2, size=num_nodes).astype(int)
+init_blue_list = np.where(init_blue_list<=0, 1, init_blue_list)
+
+init_urns(graph, init_red, init_blue, memory_list=memory_list, init_blue_list=init_blue_list, init_red_list=init_red_list)
 
 closeness = nx.closeness_centrality(graph) # Calculate closeness once and then just pass as arg to score function
 
 for i in range(time_steps):
     update_super(graph)
-    scores = get_scores(graph, i, closeness, quantize=False)
+    scores = get_scores(graph, i, closeness, alpha, beta, gamma, quantize=False)
     #inject_uniform_red(graph, scores, budget)
     if i < 2:
         print("Test")
@@ -86,10 +98,10 @@ colormap = plt.colormaps.get_cmap('seismic')
 scalarmappaple = cm.ScalarMappable(norm=normalize, cmap=colormap)
 scalarmappaple.set_array(health[0,:])
 
+plot_health(graph, health)
 
-
-animation = animate_nodes_lae(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('gifs/testall_2.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+#animation = animate_nodes_lae(graph, node_colors_r, scalarmappaple, colormap)
+#animation.save(f"gifs/sim_alpha{beta}_beta{beta}_gamma{gamma}.gif", writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
 
 """
 health = np.empty((num_nodes, time_steps+1))
