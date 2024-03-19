@@ -28,7 +28,6 @@ def generate_edge_trace(graph):
         mode='lines')
     return edge_trace
 
-
 def generate_node_trace(graph):
     node_x = []
     node_y = []
@@ -59,74 +58,6 @@ def generate_node_trace(graph):
             ),
             line_width=2))
     return node_trace
-
-def generate_figure(edge_trace, node_trace, health, graph, iterations):
-    fig = go.Figure(data=[edge_trace, node_trace],
-             layout=go.Layout(
-                frames=go.Frame(data=node_trace),
-                title='<br>Network graph made with Python',
-                titlefont_size=16,
-                #width=800,
-                #height=800, 
-                showlegend=False,
-                hovermode='closest',
-                margin=dict(b=20,l=5,r=5,t=40),
-                annotations=[ dict(
-                    text="Python code: <a href='https://plotly.com/ipython-notebooks/network-graphs/'> https://plotly.com/ipython-notebooks/network-graphs/</a>",
-                    showarrow=False,
-                    xref="paper", yref="paper",
-                    x=0.005, y=-0.002 ) ],
-                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)),
-                )
-    fig['layout']['sliders']={
-        'active': 0,
-        'yanchor': 'top',
-        'xanchor': 'left',
-        'currentvalue': {
-            'font': {'size': 20},
-            'prefix': 'Iterations',
-            'visible': True,
-            'xanchor': 'right'
-        },
-        'transition': {'duration': 300, 'easing': 'cubic-in-out'},
-        'pad': {'b': 10, 't': 50},
-        'len': 0.9,
-        'x': 0.1,
-        'y': 0,
-        'steps': [...]
-    }
-    fig['layout']['updatemenus'] = [
-    {
-        'buttons': [
-            {
-                'args': [None, {'frame': {'duration': 500, 'redraw': False},
-                         'fromcurrent': True, 'transition': {'duration': 300, 'easing': 'quadratic-in-out'}}],
-                'label': 'Play',
-                'method': 'animate'
-            },
-            {
-                'args': [[None], {'frame': {'duration': 0, 'redraw': False}, 'mode': 'immediate',
-                'transition': {'duration': 0}}],
-                'label': 'Pause',
-                'method': 'animate'
-            }
-        ],
-        'direction': 'left',
-        'pad': {'r': 10, 't': 87},
-        'showactive': False,
-        'type': 'buttons',
-        'x': 0.1,
-        'xanchor': 'right',
-        'y': 0,
-        'yanchor': 'top'
-    }
-    ]
-    for iteration in iterations:
-        data_dict = {}
-
-    fig.show()
-
 def generate_graph(adj_matrix_path, skiprows=0):
     np_array = np.loadtxt(open(adj_matrix_path, "rb"), delimiter=",", skiprows=skiprows)
     graph = nx.from_numpy_array(np_array)
@@ -224,14 +155,14 @@ def init_urns(graph):
         if node not in graph:
             graph.add_node(node)
         # i, red=2, blue=2, total=4, super_red=2, super_blue=2, super_total=4, health=[1], pos=(i,1)
-        graph.nodes[node]['red'] = 2
-        graph.nodes[node]['blue'] = 2
-        graph.nodes[node]['total'] = 4
+        graph.nodes[node]['red'] = 10
+        graph.nodes[node]['blue'] = 10
+        graph.nodes[node]['total'] = 20
 
-        graph.nodes[node]['super_red'] = 2
-        graph.nodes[node]['super_blue'] = 2
-        graph.nodes[node]['super_total'] = 2
-        graph.nodes[node]['health'] = [0.5]
+        graph.nodes[node]['super_red'] = 10
+        graph.nodes[node]['super_blue'] = 10
+        graph.nodes[node]['super_total'] = 20
+        graph.nodes[node]['health'] = [10/(20)]
     
 
 # Added
