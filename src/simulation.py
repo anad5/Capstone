@@ -5,7 +5,7 @@ from matplotlib.animation import FuncAnimation
 import random as rd
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
-from util import animate_nodes, update_super, pull_ball, init_urns, generate_graph, pyvis_animation, get_scores, plot_health, inject_uniform_red, inject_relative_red, combine_graphs, animate_nodes_lae
+from util import animate_nodes, update_super, pull_ball, init_urns, generate_graph, get_scores, plot_health, inject_uniform_red, inject_relative_red, combine_graphs, animate_nodes_lae
 
 #graph = nx.complete_graph(total_nodes)
 circles_flag = True
@@ -61,7 +61,7 @@ for i in range(time_steps):
         print("Test")
     else:
         inject_relative_red(graph, scores, budget)    
-    pull_ball(graph, delta_red, delta_blue)
+    pull_ball(graph, delta_red, delta_blue, i, init_red_list, init_blue_list)
 
 node_to_index = {node: i for i, node in enumerate(graph.nodes())}
 

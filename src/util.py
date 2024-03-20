@@ -4,7 +4,7 @@ from matplotlib.animation import FuncAnimation
 import random as rd
 import numpy as np
 from collections import deque
-from pyvis.network import Network
+#from pyvis.network import Network
 from datetime import datetime
 import os
 
@@ -172,7 +172,7 @@ def update_super(graph):
             graph.nodes[node]['super_blue'] += blue
             graph.nodes[node]['super_total'] += red + blue
 
-def pull_ball(graph, delta_red, delta_blue):
+def pull_ball(graph, delta_red, delta_blue, i, init_red_list, init_blue_list):
     """
     Function to simulate pulling of a ball from all urns. Updates only local urns.
 
@@ -202,7 +202,10 @@ def pull_ball(graph, delta_red, delta_blue):
                     graph.nodes[node]['red'] -= disapearing
                 else:
                     graph.nodes[node]['blue'] -= 1'''
-        random_pull = rd.uniform(0,1)
+            if i == graph.nodes[node]['memory']:
+                graph.nodes[node]['red'] -= init_red_list[node]
+                graph.nodes[node]['blue'] -= init_blue_list[node]
+                graph.nodes[node]['total'] -= init_red_list[node] + init_blue_list[node]
         threshold = graph.nodes[node]['super_red']/graph.nodes[node]['super_total']
         if random_pull < threshold: # Pulled a red ball
             graph.nodes[node]['red'] += delta_red
@@ -400,7 +403,7 @@ def plot_health(G, health, alpha=1, beta=1, gamma=1):
     plt.show()
 
 
-def pyvis_animation(G, width='500px', height='500px'):
+'''def pyvis_animation(G, width='500px', height='500px'):
     """
     Function to animate node colours changing using pyvis.
 
@@ -420,4 +423,4 @@ def pyvis_animation(G, width='500px', height='500px'):
         G.nodes[node].pop('history',None)
     nt = Network(width, height)
     nt.from_nx(G)
-    nt.show('nx.html', notebook=False)
+    nt.show('nx.html', notebook=False)'''
