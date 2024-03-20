@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import random as rd
+from matplotlib.colors import Normalize, ListedColormap
+
 
 def generate_edge_trace(graph):
     edge_x = []
@@ -65,53 +67,112 @@ def generate_graph(adj_matrix_path, skiprows=0):
     
     return graph
 
-# Added
-def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **kwargs):
+#ORIGINAL CODE
+# def animate_nodes(graph, node_colors, scalarmappaple, colormap, pos=None, *args, **kwargs):
 
     fig, ax = plt.subplots() 
     plt.title('Polya Urn Network')
 
     # define graph layout if None given
     if pos is None:
-        pos = nx.spring_layout(G, k = 0.07)
+        pos = nx.spring_layout(graph, k=0.07)
 
     # draw graph
-    #plt.title('Polya Urn Network')
-    #cbar = plt.colorbar(scalarmappaple)
-    #cbar.set_label('Brand awareness')
-        
-    #initial
-    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 8, cmap=colormap, ax=ax, *args, **kwargs)
-    edges = nx.draw_networkx_edges(G, pos, width = 0.25, ax=ax, *args, **kwargs)
+    nodes = nx.draw_networkx_nodes(graph, pos, node_color=node_colors[0, :], node_size = 8, cmap=colormap, ax=ax, *args, **kwargs)
+    edges = nx.draw_networkx_edges(graph, pos, width=0.25, ax=ax, *args, **kwargs)
 
     scalarmappaple.set_array(node_colors[0, :])
 
     cbar = fig.colorbar(scalarmappaple, ax=ax)  # Specify the ax argument
     cbar.set_label('Brand awareness', fontsize=12)
 
-    #rgba_array_i = scalarmappaple.to_rgba(node_colors[0,:])
-    #nodes = nx.draw_networkx_nodes(G, pos, node_color=rgba_array_i, cmap=colormap , *args, **kwargs)
-    #nodes = nx.draw_networkx_nodes(G, pos, cmap=colormap , *args, **kwargs)
-    #edges = nx.draw_networkx_edges(G, pos, *args, **kwargs)
-    #nodes.set_cmap(colormap)
-    #plt.axis('off')
-
-    #nodes.set_array(node_colors[0])
     def update(ii):
-        # nodes are just markers returned by plt.scatter;
-        # node color can hence be changed in the same way like marker colors\
-        rgba_array = scalarmappaple.to_rgba(node_colors[ii,:])
+        rgba_array = scalarmappaple.to_rgba(node_colors[ii, :])
         nodes.set_color(rgba_array)
-        #nodes = nx.draw_networkx_nodes(G, pos, node_color=rgba_array, cmap=colormap , *args, **kwargs)
-        #test1 = np.expand_dims(test, axis=1)
-        #test2 = np.broadcast_to(test1, (test1.shape[0], 4))
-        #nodes.set_facecolor(test2)
-        #nodes.set_array(test)
         return nodes,
 
-    #fig = plt.gcf()
-    frames=len(node_colors[:,0])
-    #animation = FuncAnimation(fig, update, interval=50, frames=len(node_colors[:,0]), blit=True)
+    frames = len(node_colors[:, 0])
+    animation = FuncAnimation(fig, update, frames=frames, blit=True)
+    plt.close()
+    return animation
+
+#WORKING FIXED CENTER
+# def animate_nodes(graph, node_colors, scalarmappaple, colormap, pos=None, *args, **kwargs):
+    fig, ax = plt.subplots() 
+    plt.title('Polya Urn Network')
+
+    # Define graph layout if None given
+    if pos is None:
+        pos = nx.spring_layout(graph, k=0.07)
+
+    # Draw edges
+    nx.draw_networkx_edges(graph, pos, width=0.25, ax=ax, *args, **kwargs)
+
+    # Extract node positions
+    node_x = [pos[node][0] for node in graph.nodes()]
+    node_y = [pos[node][1] for node in graph.nodes()]
+
+    # Normalize colors
+    norm = Normalize(vmin=min(node_colors[0]), vmax=max(node_colors[0]))
+
+    # Compute node colors
+    rgba_colors = [colormap(norm(color)) for color in node_colors[0]]
+
+    # Draw nodes with custom colors
+    nodes = ax.scatter(node_x, node_y, c=rgba_colors, s=100)
+
+    # Set color bar
+    scalarmappaple.set_array(node_colors[0])
+    cbar = fig.colorbar(scalarmappaple, ax=ax)
+    cbar.set_label('Brand awareness', fontsize=12)
+
+    # Update function to change node colors
+    def update(ii):
+        rgba_colors = [colormap(norm(color)) for color in node_colors[ii]]
+        nodes.set_color(rgba_colors)
+        return nodes,
+
+    frames = len(node_colors)
+    animation = FuncAnimation(fig, update, frames=frames, blit=True)
+    plt.close()
+    return animation
+
+def animate_nodes(graph, node_colors, scalarmappaple, colormap, pos=None, node_size=8, *args, **kwargs):
+    fig, ax = plt.subplots() 
+    plt.title('Polya Urn Network')
+
+    # Define graph layout if None given
+    if pos is None:
+        pos = nx.spring_layout(graph, k=0.07)
+
+    # Draw edges
+    nx.draw_networkx_edges(graph, pos, width=0.25, ax=ax, *args, **kwargs)
+
+    # Extract node positions
+    node_x = [pos[node][0] for node in graph.nodes()]
+    node_y = [pos[node][1] for node in graph.nodes()]
+
+    # Normalize colors
+    norm = Normalize(vmin=min(node_colors[0]), vmax=max(node_colors[0]))
+
+    # Compute node colors
+    rgba_colors = [colormap(norm(color)) for color in node_colors[0]]
+
+    # Draw nodes with custom colors and size
+    nodes = ax.scatter(node_x, node_y, c=rgba_colors, s=node_size)
+
+    # Set color bar
+    scalarmappaple.set_array(node_colors[0])
+    cbar = fig.colorbar(scalarmappaple, ax=ax)
+    cbar.set_label('Brand awareness', fontsize=12)
+
+    # Update function to change node colors
+    def update(ii):
+        rgba_colors = [colormap(norm(color)) for color in node_colors[ii]]
+        nodes.set_color(rgba_colors)
+        return nodes,
+
+    frames = len(node_colors)
     animation = FuncAnimation(fig, update, frames=frames, blit=True)
     plt.close()
     return animation
