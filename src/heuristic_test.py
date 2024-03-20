@@ -84,6 +84,7 @@ gamma = 1
 alpha = 1
 #budget_red = 10000
 
+budget_blue = 50
 
 for i in range(time_steps):
     update_super(graph)
@@ -96,6 +97,7 @@ for i in range(time_steps):
     #susceptibility_score[i] = all_score 
     
     # calculating heuristic scores 
+
     all_scores[i] = {}
     for node in graph.nodes():
         node_idx = node_to_index[node]
@@ -108,18 +110,22 @@ for i in range(time_steps):
         all_scores[i][node_idx] = combined
 
         nodes_midpoint = score_midpoint(all_scores[i])
-    
+
     budget_red = 500
-    added_balls = 0 
     delta_red = 1
     for node_idx in nodes_midpoint:
-        if delta_red + added_balls <= budget_red:
+        if budget_red > 0:
             graph.nodes[node_idx]['red'] += delta_red
             graph.nodes[node_idx]['total'] += delta_red
-            added_balls += delta_red 
-            #budget_red -= delta_red 
+            budget_red -= delta_red 
         else:
             break 
+    
+    delta_blue = budget_blue/num_nodes
+    for node in graph.nodes(): 
+        graph.nodes[node_idx]['blue'] += delta_blue
+        graph.nodes[node_idx]['total'] += delta_blue
+        #budget_blue -= delta_blue
 
 health = np.empty((num_nodes, time_steps+1))
 #for node in range(num_nodes):
@@ -144,18 +150,13 @@ for node in graph.nodes():
     index = node_to_index[node]  # Convert node ID to index
     health[index, :] = graph.nodes[node]['health']
 
-# No need to convert to np.array, health is already a NumPy array
-# health = np.array(health)
-
 node_colors_r = health[:, :-1].T  # Use slicing to exclude the last column for all rows
 node_colors_r_1 = health[:, :-1]  # This is the same as node_colors_r without transposition
 
 # Assuming node_colors_template is to be used for some other purpose and unrelated to the node-to-index mapping
 node_colors_template = np.random.randint(0, 100, size=(time_steps, num_nodes))
 
-
-node_colors_template = np.random.randint(0, 100, size=(time_steps, num_nodes))
-
+#node_colors_template = np.random.randint(0, 100, size=(time_steps, num_nodes))
 
 node_colors_test = np.ones((time_steps, num_nodes))
 
@@ -168,7 +169,5 @@ colormap = plt.colormaps.get_cmap('seismic')
 scalarmappaple = cm.ScalarMappable(norm=normalize, cmap=colormap)
 scalarmappaple.set_array(health[0,:])
 
-
-
 animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('gifs/heuristic_initial10.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+animation.save('gifs/abc.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)

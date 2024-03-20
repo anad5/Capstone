@@ -74,14 +74,11 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
     # define graph layout if None given
     if pos is None:
         pos = nx.spring_layout(G, k = 0.07)
+    
+    rgba_array = scalarmappaple.to_rgba(node_colors[0, :])
 
-    # draw graph
-    #plt.title('Polya Urn Network')
-    #cbar = plt.colorbar(scalarmappaple)
-    #cbar.set_label('Brand awareness')
-        
     #initial
-    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 8, cmap=colormap, ax=ax, *args, **kwargs)
+    nodes = nx.draw_networkx_nodes(G, pos, node_color=node_colors[0, :], node_size = 8, cmap=colormap, edgecolors='face', ax=ax, *args, **kwargs)
     edges = nx.draw_networkx_edges(G, pos, width = 0.25, ax=ax, *args, **kwargs)
 
     scalarmappaple.set_array(node_colors[0, :])
@@ -101,6 +98,7 @@ def animate_nodes(G, node_colors, scalarmappaple, colormap, pos=None, *args, **k
         # nodes are just markers returned by plt.scatter;
         # node color can hence be changed in the same way like marker colors\
         rgba_array = scalarmappaple.to_rgba(node_colors[ii,:])
+        nodes.set_edgecolor(rgba_array)
         nodes.set_color(rgba_array)
         #nodes = nx.draw_networkx_nodes(G, pos, node_color=rgba_array, cmap=colormap , *args, **kwargs)
         #test1 = np.expand_dims(test, axis=1)
