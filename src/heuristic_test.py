@@ -168,6 +168,5 @@ colormap = plt.colormaps.get_cmap('seismic')
 scalarmappaple = cm.ScalarMappable(norm=normalize, cmap=colormap)
 scalarmappaple.set_array(health[0,:])
 
-
 animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('gifs/ana_testing/fix_center_final.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+animation.save('gifs/ana_testing/fix_center_heur_2.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
