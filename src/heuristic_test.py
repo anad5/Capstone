@@ -84,43 +84,50 @@ gamma = 1
 alpha = 1
 #budget_red = 10000
 
-budget_blue = 50
 
-for i in range(time_steps):
-    update_super(graph)
-    pull_ball(graph, delta_blue, delta_red)
-    suscept_score = {}
-    for node in graph.nodes():
-        node_idx = node_to_index[node]
-        score = calc_susceptibility(graph, node, 'red', 'total')
-        suscept_score[node_idx] = score
-    #susceptibility_score[i] = all_score 
-    
-    # calculating heuristic scores 
-
-    all_scores[i] = {}
-    for node in graph.nodes():
-        node_idx = node_to_index[node]
-        degree_score = deg_score[node_idx] 
-        centrality_score = central_score[node_idx]  
-        susceptibility_score = suscept_score[node_idx]
+with open('nodes_midpoint.txt', 'w') as f:
+    for i in range(time_steps):
+        update_super(graph)
+        pull_ball(graph, delta_blue, delta_red)
+        suscept_score = {}
+        for node in graph.nodes():
+            node_idx = node_to_index[node]
+            score = calc_susceptibility(graph, node, 'red', 'total')
+            suscept_score[node_idx] = score
+        #susceptibility_score[i] = all_score 
         
-        # Calculate the combined score using the formula from the screenshot
-        combined = beta * degree_score + gamma * centrality_score - alpha * susceptibility_score
-        all_scores[i][node_idx] = combined
+        # calculating heuristic scores 
 
-        nodes_midpoint = score_midpoint(all_scores[i])
+        all_scores[i] = {}
+        for node in graph.nodes():
+            node_idx = node_to_index[node]
+            degree_score = deg_score[node_idx] 
+            centrality_score = central_score[node_idx]  
+            susceptibility_score = suscept_score[node_idx]
+            
+            # Calculate the combined score using the formula from the screenshot
+            combined = beta * degree_score + gamma * centrality_score - alpha * susceptibility_score
+            all_scores[i][node_idx] = combined
 
-    budget_red = 500
-    delta_red = 1
-    for node_idx in nodes_midpoint:
-        if budget_red > 0:
-            graph.nodes[node_idx]['red'] += delta_red
-            graph.nodes[node_idx]['total'] += delta_red
-            budget_red -= delta_red 
-        else:
-            break 
-    
+            nodes_midpoint = score_midpoint(all_scores[i])
+
+            if nodes_midpoint:
+                f.write(f"Timestep {i}: {', '.join(map(str, nodes_midpoint))}\n")
+            else:
+                f.write(f"Timestep {i}: No nodes in nodes_midpoint\n")
+
+        budget_red = 500
+        delta_red = 1
+        for node_idx in nodes_midpoint:
+            if budget_red > 0:
+                graph.nodes[node_idx]['red'] += delta_red
+                graph.nodes[node_idx]['total'] += delta_red
+                budget_red -= delta_red 
+            else:
+                break 
+
+    budget_blue = 500
+
     delta_blue = budget_blue/num_nodes
     for node in graph.nodes(): 
         graph.nodes[node_idx]['blue'] += delta_blue
