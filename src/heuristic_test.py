@@ -1,6 +1,7 @@
 # FOR THE COMBINED EDGES FILES AND IMPORTS ALL CIRCLE FILES 
 
 # can remove initial conditions of number of balls after a certain amount of timesteps to see if there is consensus 
+#in pull ball, if time step is equal to memory than remove initial???
 # need to check health plotting and superurn 
 
 import numpy as np
@@ -85,54 +86,53 @@ alpha = 1
 #budget_red = 10000
 
 
-with open('nodes_midpoint.txt', 'w') as f:
-    for i in range(time_steps):
-        update_super(graph)
-        pull_ball(graph, delta_blue, delta_red)
-        suscept_score = {}
-        for node in graph.nodes():
-            node_idx = node_to_index[node]
-            score = calc_susceptibility(graph, node, 'red', 'total')
-            suscept_score[node_idx] = score
+#with open('nodes_midpoint.txt', 'w') as f:
+for i in range(time_steps):
+    update_super(graph)
+    pull_ball(graph, delta_blue, delta_red)
+    suscept_score = {}
+    for node in graph.nodes():
+        node_idx = node_to_index[node]
+        score = calc_susceptibility(graph, node, 'red', 'total')
+        suscept_score[node_idx] = score
         #susceptibility_score[i] = all_score 
         
         # calculating heuristic scores 
 
-        all_scores[i] = {}
-        for node in graph.nodes():
-            node_idx = node_to_index[node]
-            degree_score = deg_score[node_idx] 
-            centrality_score = central_score[node_idx]  
-            susceptibility_score = suscept_score[node_idx]
+    all_scores[i] = {}
+    for node in graph.nodes():
+        node_idx = node_to_index[node]
+        degree_score = deg_score[node_idx] 
+        centrality_score = central_score[node_idx]  
+        susceptibility_score = suscept_score[node_idx]
             
             # Calculate the combined score using the formula from the screenshot
-            combined = beta * degree_score + gamma * centrality_score - alpha * susceptibility_score
-            all_scores[i][node_idx] = combined
+        combined = beta * degree_score + gamma * centrality_score - alpha * susceptibility_score
+        all_scores[i][node_idx] = combined
 
-            nodes_midpoint = score_midpoint(all_scores[i])
+        nodes_midpoint = score_midpoint(all_scores[i])
 
-            if nodes_midpoint:
-                f.write(f"Timestep {i}: {', '.join(map(str, nodes_midpoint))}\n")
-            else:
-                f.write(f"Timestep {i}: No nodes in nodes_midpoint\n")
+            # if nodes_midpoint:
+            #     f.write(f"Timestep {i}: {', '.join(map(str, nodes_midpoint))}\n")
+            # else:
+            #     f.write(f"Timestep {i}: No nodes in nodes_midpoint\n")
 
-        budget_red = 500
-        delta_red = 1
-        for node_idx in nodes_midpoint:
-            if budget_red > 0:
-                graph.nodes[node_idx]['red'] += delta_red
-                graph.nodes[node_idx]['total'] += delta_red
-                budget_red -= delta_red 
-            else:
-                break 
+    budget_red = 500
+    delta_red = 1
+    for node_idx in nodes_midpoint:
+        if budget_red > 0:
+            graph.nodes[node_idx]['red'] += delta_red
+            graph.nodes[node_idx]['total'] += delta_red
+            budget_red -= delta_red 
+        else:
+            break 
 
-    budget_blue = 500
-
-    delta_blue = budget_blue/num_nodes
+    budget_blue = 100
+    #delta_blue = budget_blue/num_nodes
     for node in graph.nodes(): 
         graph.nodes[node_idx]['blue'] += delta_blue
         graph.nodes[node_idx]['total'] += delta_blue
-        #budget_blue -= delta_blue
+        budget_blue -= delta_blue
 
 health = np.empty((num_nodes, time_steps+1))
 #for node in range(num_nodes):
@@ -177,4 +177,4 @@ scalarmappaple = cm.ScalarMappable(norm=normalize, cmap=colormap)
 scalarmappaple.set_array(health[0,:])
 
 animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('gifs/abc.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+animation.save('gifs/testing_colours3.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
