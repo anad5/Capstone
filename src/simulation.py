@@ -84,7 +84,7 @@ node_colors_r_1 = health[:, :-1]  # This is the same as node_colors_r without tr
 node_colors_template = np.random.randint(0, 100, size=(time_steps, num_nodes))
 
 
-node_colors_template = np.random.randint(0, 100, size=(time_steps, num_nodes))
+#node_colors_template = np.random.randint(0, 100, size=(time_steps, num_nodes))
 
 
 node_colors_test = np.ones((time_steps, num_nodes))
@@ -100,8 +100,8 @@ scalarmappaple.set_array(health[0,:])
 
 plot_health(graph, health)
 
-#animation = animate_nodes_lae(graph, node_colors_r, scalarmappaple, colormap)
-#animation.save(f"gifs/sim_alpha{beta}_beta{beta}_gamma{gamma}.gif", writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+animation = animate_nodes_lae(graph, node_colors_r, scalarmappaple, colormap)
+animation.save(f"gifs/sim_alpha{beta}_beta{beta}_gamma{gamma}.gif", writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
 
 """
 health = np.empty((num_nodes, time_steps+1))

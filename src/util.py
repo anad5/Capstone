@@ -206,6 +206,7 @@ def pull_ball(graph, delta_red, delta_blue, i, init_red_list, init_blue_list):
                 graph.nodes[node]['red'] -= init_red_list[node]
                 graph.nodes[node]['blue'] -= init_blue_list[node]
                 graph.nodes[node]['total'] -= init_red_list[node] + init_blue_list[node]
+        random_pull = rd.uniform(0,1)
         threshold = graph.nodes[node]['super_red']/graph.nodes[node]['super_total']
         if random_pull < threshold: # Pulled a red ball
             graph.nodes[node]['red'] += delta_red
