@@ -127,7 +127,7 @@ for i in range(time_steps):
         else:
             break 
 
-    budget_blue = 100
+    budget_blue = 500
     #delta_blue = budget_blue/num_nodes
     for node in graph.nodes(): 
         graph.nodes[node_idx]['blue'] += delta_blue
@@ -177,4 +177,4 @@ scalarmappaple = cm.ScalarMappable(norm=normalize, cmap=colormap)
 scalarmappaple.set_array(health[0,:])
 
 animation = animate_nodes(graph, node_colors_r, scalarmappaple, colormap)
-animation.save('gifs/testing_colours3.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)
+animation.save('gifs/average_500.gif', writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)

@@ -290,5 +290,5 @@ def plot_health(G, health):
     plt.xlabel('Timestep')
     plt.ylabel('Average Network Exposure')
     
-    plt.savefig(f"health_plot")
+    plt.savefig(f"average_500")
     plt.show()

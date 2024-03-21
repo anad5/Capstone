@@ -45,10 +45,14 @@ def calc_centrality(graph, node):
 def score_midpoint(scores):
     # want averagge and max score 
     average_score = sum(scores.values()) / len(scores)
+    #min_score = min(scores.values())
     #max_score = max(scores.values())
+    #hello = min_score + max_score 
     
     # midpoint between the averagge heuristic score and max 
     #midpoint = (average_score + max_score) / 2
+    #midpoint = (max_score + min_score)/2 
+    #midpoint = (hello + average_score)/2
     
     # nodes above the midpoint
     nodes_above_midpoint = [node for node, score in scores.items() if score > average_score]
