@@ -1,14 +1,25 @@
-from collections import deque
-import plotly.graph_objects as go
-import networkx as nx
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-import random as rd
-from matplotlib.colors import Normalize, ListedColormap
-
+from collections import deque  # Import deque for efficient queue operations
+import plotly.graph_objects as go  # Import Plotly for interactive plotting
+import networkx as nx  # Import NetworkX for graph manipulation
+import numpy as np  # Import NumPy for numerical operations
+import matplotlib.pyplot as plt  # Import Matplotlib for plotting
+from matplotlib.animation import FuncAnimation  # Import FuncAnimation for animation creation
+import random as rd  # Import random for generating random numbers
+from matplotlib.colors import Normalize, ListedColormap  # Import Normalize and ListedColormap for color mapping
 
 def generate_edge_trace(graph):
+    """
+    Function to generate edge trace for Plotly graph.
+
+    Args:
+        graph: Networkx graph object.
+
+    Returns:
+        edge_trace: Edge trace for Plotly graph.
+
+    Raises:
+        None.
+    """
     edge_x = []
     edge_y = []
 
@@ -31,6 +42,18 @@ def generate_edge_trace(graph):
     return edge_trace
 
 def generate_node_trace(graph):
+    """
+    Function to generate node trace for Plotly graph.
+
+    Args:
+        graph: Networkx graph object.
+
+    Returns:
+        node_trace: Node trace for Plotly graph.
+
+    Raises:
+        None.
+    """
     node_x = []
     node_y = []
     for node in graph.nodes():
@@ -62,6 +85,19 @@ def generate_node_trace(graph):
     return node_trace
 
 def generate_graph(adj_matrix_path, skiprows=0):
+    """
+    Function to generate a graph from an adjacency matrix.
+
+    Args:
+        adj_matrix_path: Path to the adjacency matrix file.
+        skiprows: Number of rows to skip while reading the file. Default is 0.
+
+    Returns:
+        graph: Networkx graph object.
+
+    Raises:
+        None.
+    """
     np_array = np.loadtxt(open(adj_matrix_path, "rb"), delimiter=",", skiprows=skiprows)
     graph = nx.from_numpy_array(np_array)
     
@@ -138,6 +174,24 @@ def generate_graph(adj_matrix_path, skiprows=0):
     return animation
 
 def animate_nodes(graph, node_colors, scalarmappaple, colormap, pos=None, node_size=8, *args, **kwargs):
+    """
+    Function to animate nodes in a Polya Urn Network.
+
+    Args:
+        graph: Networkx graph structure.
+        node_colors: Array of node colors for each timestep.
+        scalarmappaple: ScalarMappable object for color mapping.
+        colormap: Colormap for node colors.
+        pos: Node positions. Default is None.
+        node_size: Size of nodes. Default is 8.
+        *args, **kwargs: Additional arguments and keyword arguments.
+
+    Returns:
+        animation: Animation of node colors over time.
+
+    Raises:
+        None.
+    """
     fig, ax = plt.subplots() 
     plt.title('Polya Urn Network')
 
@@ -287,7 +341,6 @@ def pull_ball(graph, delta_red, delta_blue):
             if graph.graph['memory_flag'] == True:
                 graph.nodes[node]['history'].append([0,1]) # Add blue ball indicator to history
         graph.nodes[node]['health'].append((graph.nodes[node]['super_red']/graph.nodes[node]['super_total'])) # Update the health of each node
-        #graph.nodes[node]['health'].append(int((graph.nodes[node]['red']/graph.nodes[node]['total'])*100)) # Update the health of each node
 
 def plot_health(G, health):
     """
