@@ -5,9 +5,9 @@ from matplotlib.animation import FuncAnimation
 import random as rd
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
-from util import animate_nodes, update_super, pull_ball, init_urns, generate_graph, pyvis_animation, get_scores, plot_health, inject_uniform_red, inject_relative_red, combine_graphs, animate_nodes_lae, inject_uniform_blue, plot_health_variance
+from util import animate_nodes, plot_multi_health, update_super, pull_ball, init_urns, generate_graph, pyvis_animation, get_scores, plot_health, inject_uniform_red, inject_relative_red, combine_graphs, animate_nodes_lae, inject_uniform_blue, plot_health_variance
 
-#graph = nx.complete_graph(total_nodes)
+# Flags
 circles_flag = True
 memory_flag = True
 remove_init_flag = True
@@ -32,6 +32,7 @@ else:
     print("Number of nodes in the combined graph:", num_nodes)
 
 
+# Parameters
 time_steps = 100
 delta_red = 2
 delta_blue = 2
@@ -42,6 +43,7 @@ budget_b = 500
 alpha = 10
 beta = 1
 gamma = 1
+zeta = 1
 
 
 memory_list = np.random.default_rng().normal(9, 3, size=num_nodes).astype(int)
@@ -59,7 +61,7 @@ closeness = nx.closeness_centrality(graph) # Calculate closeness once and then j
 
 for i in range(time_steps):
     update_super(graph)
-    scores = get_scores(graph, i, closeness, alpha, beta, gamma, quantize=False)
+    scores = get_scores(graph, i, closeness, alpha, beta, gamma, zeta, quantize=False)
     if i < 1:
         print("Test")
     else:
@@ -103,7 +105,8 @@ scalarmappaple = cm.ScalarMappable(norm=normalize, cmap=colormap)
 scalarmappaple.set_array(health[0,:])
 
 #plot_health(graph, health, alpha, beta, gamma)
-plot_health_variance(graph, health, alpha, beta, gamma)
+#plot_health_variance(graph, health, alpha, beta, gamma)
+plot_multi_health(graph, health, alpha, beta, gamma)
 
 animation = animate_nodes_lae(graph, node_colors_r, scalarmappaple, colormap)
 animation.save(f"gifs/sim_alpha{alpha}_beta{beta}_gamma{gamma}.gif", writer='imagemagick', savefig_kwargs={'facecolor':'white'}, fps=1)

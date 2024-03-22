@@ -270,8 +270,8 @@ def generate_graph(adj_matrix_path, memory_flag=True, remove_init_flag=True, ski
     G.graph['remove_init_flag'] = remove_init_flag
     return G
 
-def heuristic(degree, centrality, susceptibility, alpha, beta, gamma):
-    return beta*degree+gamma*centrality-alpha*susceptibility
+def heuristic(degree, centrality, susceptibility, memory, alpha, beta, gamma, zeta):
+    return beta*degree+gamma*centrality-alpha*susceptibility+zeta*memory
 
 def quantize_score(score, levels=[0,10,20,30,40,50,60]):
     for level in range(levels):
@@ -280,7 +280,7 @@ def quantize_score(score, levels=[0,10,20,30,40,50,60]):
             return score
     return levels[-1]
 
-def get_scores(G, i, closeness, alpha, beta, gamma, quantize=True):
+def get_scores(G, i, closeness, alpha, beta, gamma, zeta, quantize=True):
     """
     Function to calculate heuristic scores for each node in a graph.
 
@@ -309,12 +309,13 @@ def get_scores(G, i, closeness, alpha, beta, gamma, quantize=True):
         scores[0,node] = degree
         scores[1,node] = centrality
         scores[2,node] = susceptibility
+        memory = G.nodes[node]['memory']
         if quantize:
-            score = int(heuristic(degree, centrality, susceptibility, alpha, beta, gamma))
+            score = int(heuristic(degree, centrality, susceptibility, memory, alpha, beta, gamma, zeta))
             quantized_score = quantize_score(score)
             scores[3,node] = quantized_score
         else:
-            scores[3,node] = int(heuristic(degree, centrality, susceptibility, alpha, beta, gamma))
+            scores[3,node] = int(heuristic(degree, centrality, susceptibility, memory, alpha, beta, gamma, zeta))
     return scores
 
 def inject_uniform_red(G, scores, budget, topn=15):
@@ -418,6 +419,32 @@ def plot_health_variance(G, health, alpha=1, beta=1, gamma=1):
     plt.ylabel('Variance of Network Exposure')
 
     plt.savefig(f"./figures/health_variance_plot_alpha{alpha}_beta{beta}_gamma{gamma}")
+    plt.show()
+
+def plot_multi_health(G, health, alpha, beta, gamma):
+    """
+    Function to plot the "health" of a few random nodes over all timesteps
+
+    Args:
+        graph: Networkx graph structure.
+        health: Array of health values at each timestep.
+
+    Returns:
+        None.
+
+    Raises:
+        None.
+    """
+    num_nodes = G.number_of_nodes()
+    nums = rd.sample(range(0, num_nodes), 4)
+    multi_health = health[nums,:-1]
+    plt.plot(multi_health.T)
+    plt.legend(['Node 1', 'Node 2', 'Node 3', 'Node 4'])
+    plt.xlabel('Timestep')
+    plt.ylabel('Network Exposure')
+    ax = plt.gca()
+    #ax.set_ylim([0, 1])
+    plt.savefig(f"./figures/multi_health_plot_alpha{alpha}_beta{beta}_gamma{gamma}")
     plt.show()
 
 def plot_health(G, health, alpha=1, beta=1, gamma=1):
