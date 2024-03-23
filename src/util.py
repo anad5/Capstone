@@ -9,6 +9,8 @@ from pyvis.network import Network
 from datetime import datetime
 import os
 
+plt.ioff() # Turn off interactive plotting
+
 def combine_graphs(circle_files_directory, combined_file=None):
     # create G empty graph 
     G = nx.Graph()
@@ -318,7 +320,7 @@ def get_scores(G, i, closeness, alpha, beta, gamma, zeta, quantize=True):
             scores[3,node] = int(heuristic(degree, centrality, susceptibility, memory, alpha, beta, gamma, zeta))
     return scores
 
-def inject_uniform_red(G, scores, budget, topn=15):
+def inject_uniform_red(G, scores, budget_b):
     """
     Function to inject red balls to urns with the top n scores uniformly
 
@@ -332,16 +334,15 @@ def inject_uniform_red(G, scores, budget, topn=15):
     Raises:
         None.
     """
-    for i in sorted(range(len(scores[3, :])), key=lambda i: scores[3, i])[-topn:]:
-        if budget / topn < 1:
-            print("warning, no balls being added because budget being spread too thin")
+    num = len(scores[3,:])
+    num = G.number_of_nodes()
+    for i in range(num):
+        if G.graph['memory_flag'] == True:
+            G.nodes[i]['history'][-1][0] += budget_b / num 
+            G.nodes[i]['red'] += budget_b / num
         else:
-            if G.graph['memory_flag'] == True:
-                G.nodes[i]['history'][-1][0] += budget / topn
-                G.nodes[i]['red'] += budget / topn
-            else:
-                G.nodes[i]['red'] += budget / topn
-            G.nodes[i]['total'] += budget / topn
+            G.nodes[i]['red'] += budget_b / num
+        G.nodes[i]['total'] += budget_b / num
 
 def inject_uniform_blue(G, scores, budget_b):
     """
@@ -357,17 +358,15 @@ def inject_uniform_blue(G, scores, budget_b):
     Raises:
         None.
     """
-    num = len(scores[2,:])
+    num = len(scores[3,:])
+    num = G.number_of_nodes()
     for i in range(num):
-        if budget_b / num < 1:
-            print("warning, no balls being added because budget being spread too thin")
+        if G.graph['memory_flag'] == True:
+            G.nodes[i]['history'][-1][1] += budget_b / num 
+            G.nodes[i]['blue'] += budget_b / num
         else:
-            if G.graph['memory_flag'] == True:
-                G.nodes[i]['history'][-1][0] += budget_b / num 
-                G.nodes[i]['blue'] += budget_b / num
-            else:
-                G.nodes[i]['blue'] += budget_b / num
-            G.nodes[i]['total'] += budget_b / num
+            G.nodes[i]['blue'] += budget_b / num
+        G.nodes[i]['total'] += budget_b / num
 
 def inject_relative_red(G, scores, budget):
     """
@@ -386,18 +385,14 @@ def inject_relative_red(G, scores, budget):
     total = np.sum(scores[3, :])
     for i in range(len(scores[3, :])):
         relative = scores[3, i] / total
-        if budget * relative < 1:
-            test = 1
-            #print("warning, no balls being added because budget being spread too thin")
+        if G.graph['memory_flag'] == True:
+            amount = budget * relative
+            G.nodes[i]['history'][-1][0] += amount
+            G.nodes[i]['red'] += amount
+            G.nodes[i]['total'] += amount
         else:
-            if G.graph['memory_flag'] == True:
-                amount = budget * relative
-                G.nodes[i]['history'][-1][0] += amount
-                G.nodes[i]['red'] += amount
-                G.nodes[i]['total'] += amount
-            else:
-                G.nodes[i]['red'] += budget * relative
-                G.nodes[i]['total'] += amount
+            G.nodes[i]['red'] += budget * relative
+            G.nodes[i]['total'] += amount
 
 def plot_health_variance(G, health, alpha=1, beta=1, gamma=1):
     """
@@ -416,10 +411,10 @@ def plot_health_variance(G, health, alpha=1, beta=1, gamma=1):
     avg_health = np.var(health[:,:-1]*100, axis=0)
     plt.plot(avg_health)
     plt.xlabel('Timestep')
-    plt.ylabel('Variance of Network Exposure')
+    plt.ylabel(f"Variance of Network Exposure - Alpha: {alpha}, Beta: {beta}, Gamma: {gamma}")
 
-    plt.savefig(f"./figures/health_variance_plot_alpha{alpha}_beta{beta}_gamma{gamma}")
-    plt.show()
+    plt.savefig(f"./figures/health_variance_plot_alpha{alpha}_beta{beta}_gamma{gamma}.png")
+    plt.clf()
 
 def plot_multi_health(G, health, alpha, beta, gamma):
     """
@@ -441,11 +436,11 @@ def plot_multi_health(G, health, alpha, beta, gamma):
     plt.plot(multi_health.T)
     plt.legend(['Node 1', 'Node 2', 'Node 3', 'Node 4'])
     plt.xlabel('Timestep')
-    plt.ylabel('Network Exposure')
+    plt.ylabel(f"Network Exposure - Alpha: {alpha}, Beta: {beta}, Gamma: {gamma}")
     ax = plt.gca()
-    #ax.set_ylim([0, 1])
-    plt.savefig(f"./figures/multi_health_plot_alpha{alpha}_beta{beta}_gamma{gamma}")
-    plt.show()
+    #giax.set_ylim([0, 1])
+    plt.savefig(f"./figures/multi_health_plot_alpha{alpha}_beta{beta}_gamma{gamma}.png")
+    plt.clf()
 
 def plot_health(G, health, alpha=1, beta=1, gamma=1):
     """
@@ -465,10 +460,10 @@ def plot_health(G, health, alpha=1, beta=1, gamma=1):
     avg_health = np.sum(health[:,:-1], axis=0)/num_nodes
     plt.plot(avg_health)
     plt.xlabel('Timestep')
-    plt.ylabel('Average Network Exposure')
+    plt.ylabel(f"Average Network Exposure - Alpha: {alpha}, Beta: {beta}, Gamma: {gamma}")
 
-    plt.savefig(f"./figures/health_plot_alpha{alpha}_beta{beta}_gamma{gamma}")
-    plt.show()
+    plt.savefig(f"./figures/health_plot_alpha{alpha}_beta{beta}_gamma{gamma}.png")
+    plt.clf()
 
 
 def pyvis_animation(G, width='500px', height='500px'):
